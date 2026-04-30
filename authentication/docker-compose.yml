@@ -1,0 +1,43 @@
+
+services:
+
+  db-auth:
+    image: postgres:15
+    container_name: db_auth
+    environment:
+      POSTGRES_DB: bd_auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5436:5432"
+    volumes:
+      - db_auth_data:/var/lib/postgresql/data
+    networks:
+      - cordillera-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ms-autenticacion:
+    build: .
+    container_name: ms_autenticacion
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-auth:5432/bd_auth
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+    depends_on:
+      db-auth:
+        condition: service_healthy
+    networks:
+      - cordillera-net
+
+volumes:
+  db_auth_data:
+
+networks:
+  cordillera-net:
+    driver: bridge

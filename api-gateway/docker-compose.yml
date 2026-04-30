@@ -1,0 +1,122 @@
+services:
+
+  db-auth:
+    image: postgres:15
+    container_name: db_auth
+    environment:
+      POSTGRES_DB: bd_auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5436:5432"
+    volumes:
+      - db_auth_data:/var/lib/postgresql/data
+    networks:
+      - cordillera-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  authentication:
+    build: ../authentication
+    container_name: authentication
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-auth:5432/bd_auth
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+    depends_on:
+      db-auth:
+        condition: service_healthy
+    networks:
+      - cordillera-net
+
+  db-ventas:
+    image: postgres:15
+    container_name: db_ventas
+    environment:
+      POSTGRES_DB: bd_ventas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_ventas_data:/var/lib/postgresql/data
+    networks:
+      - cordillera-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ventas:
+    build: ../ventas
+    container_name: ventas
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-ventas:5432/bd_ventas
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+    depends_on:
+      db-ventas:
+        condition: service_healthy
+    networks:
+      - cordillera-net
+
+  db-inventario:
+    image: postgres:15
+    container_name: db_inventario
+    environment:
+      POSTGRES_DB: bd_inventario
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5434:5432"
+    volumes:
+      - db_inventario_data:/var/lib/postgresql/data
+    networks:
+      - cordillera-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s 
+      retries: 5
+
+  inventario:
+    build: ../inventario
+    container_name: inventario
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-inventario:5432/bd_inventario
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+    depends_on:
+      db-inventario:
+        condition: service_healthy
+    networks:
+      - cordillera-net
+
+  api-gateway:
+    build: .
+    container_name: api_gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - authentication
+    networks:
+      - cordillera-net
+
+volumes:
+  db_auth_data:
+  db_ventas_data:
+  db_inventario_data:
+
+networks:
+  cordillera-net:
+    driver: bridge
