@@ -102,6 +102,40 @@ services:
     networks:
       - cordillera-net
 
+  db-finanzas:
+    image: postgres:15
+    container_name: db_finanzas
+    environment:
+      POSTGRES_DB: bd_finanzas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5435:5432"
+    volumes:
+      - db_finanzas_data:/var/lib/postgresql/data
+    networks:
+      - cordillera-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  finanzas:
+    build: ../finanzas
+    container_name: finanzas
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-finanzas:5432/bd_finanzas
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+    depends_on:
+      db-finanzas:
+        condition: service_healthy
+    networks:
+      - cordillera-net
+
   api-gateway:
     build: .
     container_name: api_gateway
@@ -109,6 +143,9 @@ services:
       - "8080:8080"
     depends_on:
       - authentication
+      - ventas
+      - inventario
+      - finanzas
     networks:
       - cordillera-net
 
@@ -116,6 +153,7 @@ volumes:
   db_auth_data:
   db_ventas_data:
   db_inventario_data:
+  db_finanzas_data:
 
 networks:
   cordillera-net:
