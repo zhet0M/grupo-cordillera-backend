@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Collection;
 
 public interface VentasRepository extends JpaRepository<Venta, Long> {
     List<Venta> findByFecha(LocalDate fecha);
@@ -15,6 +16,8 @@ public interface VentasRepository extends JpaRepository<Venta, Long> {
     List<Venta> findByFechaBetween(LocalDate inicio, LocalDate fin);
 
     List<Venta> findByCanal(Venta.Canal canal);
+
+    List<Venta> findByEstadoFinanzasIn(Collection<Venta.EstadoFinanzas> estados);
 
     // Total de ventas por un periodo de tiempo
     @Query("SELECT SUM(v.montoTotal) FROM Venta v WHERE v.fecha BETWEEN :inicio AND :fin")

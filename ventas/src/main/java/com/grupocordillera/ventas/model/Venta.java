@@ -3,6 +3,7 @@ package com.grupocordillera.ventas.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ventas")
@@ -40,8 +41,26 @@ public class Venta {
     @Enumerated(EnumType.STRING)
     private Canal canal;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoFinanzas estadoFinanzas;
+
+    @Column(nullable = false)
+    private Integer intentosFinanzas;
+
+    @Column(length = 1000)
+    private String ultimoErrorFinanzas;
+
+    private LocalDateTime fechaUltimoIntentoFinanzas;
+
     public enum Canal {
         POS,        // punto de venta físico
         ECOMMERCE   // venta online
+    }
+
+    public enum EstadoFinanzas {
+        PENDIENTE,
+        SINCRONIZADO,
+        ERROR
     }
 }

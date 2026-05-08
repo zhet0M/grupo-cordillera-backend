@@ -4,27 +4,26 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.dao.DataAccessException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.grupocordillera.ventas.client.InventarioClient;
 import com.grupocordillera.ventas.model.Venta;
 import com.grupocordillera.ventas.repository.VentasRepository;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import jakarta.persistence.PersistenceException;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class VentasService {
 
+    private static final int MAX_INTENTOS_FINANZAS = 5;
+
     private final VentasRepository ventasRepository;
     private final InventarioClient inventarioClient;
+    private final FinanzasSyncService finanzasSyncService;
 
-    @CircuitBreaker(name = "ventas", fallbackMethod = "fallbackRegistrarVenta")
     public Venta registrarVenta(Venta venta) {
-        // Obtener datos del producto desde inventario
         Map<String, Object> producto = inventarioClient.porSku(venta.getSkuProducto());
         Long productoId = extraerLong(producto.get("id"));
         String nombreProducto = (String) producto.get("nombre");
@@ -34,30 +33,42 @@ public class VentasService {
             throw new RuntimeException("Respuesta invalida desde inventario al obtener el producto");
         }
 
-        // Descontar stock en inventario
         inventarioClient.descontarStock(venta.getSkuProducto(), venta.getCantidad());
-        
-        // Poblar los datos de la venta con la información del producto
+
         venta.setProductoId(productoId);
         venta.setNombreProducto(nombreProducto);
         venta.setPrecioUnitario(precioUnitario);
         venta.setMontoTotal(precioUnitario * venta.getCantidad());
-        
-        if (venta.getFecha() == null) {
-            venta.setFecha(LocalDate.now());
-        }
-        
-        // Guardar la venta
-        return ventasRepository.save(venta);
+        venta.setFecha(venta.getFecha() != null ? venta.getFecha() : LocalDate.now());
+        venta.setEstadoFinanzas(Venta.EstadoFinanzas.PENDIENTE);
+        venta.setIntentosFinanzas(0);
+        venta.setUltimoErrorFinanzas(null);
+        venta.setFechaUltimoIntentoFinanzas(null);
+
+        Venta ventaGuardada = ventasRepository.save(venta);
+        return finanzasSyncService.sincronizarVentaConFinanzas(ventaGuardada);
     }
 
-    public Venta fallbackRegistrarVenta(Venta venta, Throwable t) {
-        if (esErrorBaseDatos(t)) {
-            throw new RuntimeException("Error al guardar la venta en la base de datos. Detalle: " + extraerMensaje(t));
+    @Scheduled(fixedDelayString = "${finanzas.reintento.delay-ms:60000}")
+    public void reprocesarVentasPendientesProgramado() {
+        reprocesarVentasPendientes();
+    }
+
+    public int reprocesarVentasPendientes() {
+        List<Venta> pendientes = obtenerVentasPendientesFinanzas();
+        int reprocesadas = 0;
+
+        for (Venta venta : pendientes) {
+            if ((venta.getIntentosFinanzas() == null ? 0 : venta.getIntentosFinanzas()) >= MAX_INTENTOS_FINANZAS) {
+                continue;
+            }
+            Venta resultado = finanzasSyncService.sincronizarVentaConFinanzas(venta);
+            if (resultado.getEstadoFinanzas() == Venta.EstadoFinanzas.SINCRONIZADO) {
+                reprocesadas++;
+            }
         }
 
-        // Fallback Si el inventario falla (está caído, muy lento, o falla el stock)
-        throw new RuntimeException("Circuit Breaker Abierto: No se pudo registrar la venta. Servicio de inventario no disponible o falló. Detalle: " + extraerMensaje(t));
+        return reprocesadas;
     }
 
     public List<Venta> obtenerTodas() {
@@ -72,7 +83,6 @@ public class VentasService {
         return ventasRepository.findBySucursal(sucursal);
     }
 
-    // Obtener ventas por rango de fechas
     public List<Venta> obtenerPorRango(LocalDate inicio, LocalDate fin) {
         return ventasRepository.findByFechaBetween(inicio, fin);
     }
@@ -81,7 +91,6 @@ public class VentasService {
         return ventasRepository.findByFecha(LocalDate.now());
     }
 
-    // Total de ventas por período
     public Double totalPorPeriodo(LocalDate inicio, LocalDate fin) {
         Double total = ventasRepository.sumMontoTotalByFechaBetween(inicio, fin);
         return total != null ? total : 0.0;
@@ -90,6 +99,10 @@ public class VentasService {
     public Double totalPorSucursal(String sucursal) {
         Double total = ventasRepository.sumMontoTotalBySucursal(sucursal);
         return total != null ? total : 0.0;
+    }
+
+    public List<Venta> obtenerVentasPendientesFinanzas() {
+        return ventasRepository.findByEstadoFinanzasIn(List.of(Venta.EstadoFinanzas.PENDIENTE, Venta.EstadoFinanzas.ERROR));
     }
 
     public void eliminarVenta(Long id) {
@@ -110,28 +123,4 @@ public class VentasService {
         return null;
     }
 
-    private boolean esErrorBaseDatos(Throwable t) {
-        Throwable actual = t;
-        while (actual != null) {
-            if (actual instanceof DataAccessException || actual instanceof PersistenceException) {
-                return true;
-            }
-            actual = actual.getCause();
-        }
-        return false;
-    }
-
-    private String extraerMensaje(Throwable t) {
-        Throwable actual = t;
-        String ultimoMensaje = null;
-
-        while (actual != null) {
-            if (actual.getMessage() != null && !actual.getMessage().isBlank()) {
-                ultimoMensaje = actual.getMessage();
-            }
-            actual = actual.getCause();
-        }
-
-        return ultimoMensaje != null ? ultimoMensaje : "sin detalle";
-    }
 }

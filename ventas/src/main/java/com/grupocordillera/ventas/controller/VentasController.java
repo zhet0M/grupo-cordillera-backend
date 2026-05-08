@@ -1,14 +1,23 @@
 package com.grupocordillera.ventas.controller;
 
-import com.grupocordillera.ventas.model.Venta;
-import com.grupocordillera.ventas.service.VentasService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
 import java.util.List;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.grupocordillera.ventas.model.Venta;
+import com.grupocordillera.ventas.service.VentasService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/ventas")
@@ -25,6 +34,17 @@ public class VentasController {
     @GetMapping
     public ResponseEntity<List<Venta>> obtenerTodas() {
         return ResponseEntity.ok(ventasService.obtenerTodas());
+    }
+
+    @GetMapping("/finanzas/pendientes")
+    public ResponseEntity<List<Venta>> pendientesFinanzas() {
+        return ResponseEntity.ok(ventasService.obtenerVentasPendientesFinanzas());
+    }
+
+    @PostMapping("/finanzas/reprocesar")
+    public ResponseEntity<String> reprocesarFinanzas() {
+        int reprocesadas = ventasService.reprocesarVentasPendientes();
+        return ResponseEntity.ok("Ventas reprocesadas hacia finanzas: " + reprocesadas);
     }
 
     @GetMapping("/fecha/{fecha}")

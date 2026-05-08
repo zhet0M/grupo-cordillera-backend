@@ -1,18 +1,15 @@
-package com.grupocordillera.ventas;
+package com.grupocordillera.finanzas;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.scheduling.annotation.EnableScheduling;
-
 
 @SpringBootApplication
 @EnableFeignClients
-@EnableScheduling
-public class VentasApplication {
+public class FinanzasApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(VentasApplication.class, args);
+		SpringApplication.run(FinanzasApplication.class, args);
 	}
 
 }
