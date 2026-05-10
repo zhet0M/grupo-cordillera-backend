@@ -17,6 +17,21 @@ public class Venta {
     @Column(nullable = false)
     private String sucursal;
 
+    private Long clienteId;
+
+    private String nombreCliente;
+
+    private String apellidoCliente;
+
+    private String emailCliente;
+
+    private String telefonoCliente;
+
+    private String direccionCliente;
+
+    @Enumerated(EnumType.STRING)
+    private TipoClienteSnapshot tipoClienteSnapshot;
+
     @Column(nullable = false)
     private Long productoId;
 
@@ -62,5 +77,13 @@ public class Venta {
         PENDIENTE,
         SINCRONIZADO,
         ERROR
+    }
+
+    public enum TipoClienteSnapshot {
+        REGULAR,
+        FRECUENTE,
+        VIP,
+        CORPORATIVO,
+        MAYORISTA
     }
 }

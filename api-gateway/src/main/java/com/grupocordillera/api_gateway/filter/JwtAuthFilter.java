@@ -94,6 +94,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return "ADMIN_FINANZAS".equals(rol);
         }
         if (path.startsWith("/clientes")) {
+            if (isGet) return true;
             return "ADMIN_CLIENTES".equals(rol);
         }
         if (path.startsWith("/kpis")) {
