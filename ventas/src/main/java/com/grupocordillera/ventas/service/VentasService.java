@@ -1,5 +1,6 @@
 package com.grupocordillera.ventas.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -7,7 +8,10 @@ import java.util.Map;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.grupocordillera.ventas.client.ClientesClient;
 import com.grupocordillera.ventas.client.InventarioClient;
+import com.grupocordillera.ventas.dto.ClienteDTO;
+import com.grupocordillera.ventas.dto.RegistrarCompraClienteRequest;
 import com.grupocordillera.ventas.model.Venta;
 import com.grupocordillera.ventas.repository.VentasRepository;
 
@@ -21,9 +25,13 @@ public class VentasService {
 
     private final VentasRepository ventasRepository;
     private final InventarioClient inventarioClient;
+    private final ClientesClient clientesClient;
     private final FinanzasSyncService finanzasSyncService;
 
     public Venta registrarVenta(Venta venta) {
+        validarCanal(venta);
+        ClienteDTO cliente = resolverClienteParaVenta(venta);
+
         Map<String, Object> producto = inventarioClient.porSku(venta.getSkuProducto());
         Long productoId = extraerLong(producto.get("id"));
         String nombreProducto = (String) producto.get("nombre");
@@ -44,9 +52,12 @@ public class VentasService {
         venta.setIntentosFinanzas(0);
         venta.setUltimoErrorFinanzas(null);
         venta.setFechaUltimoIntentoFinanzas(null);
+        aplicarSnapshotCliente(venta, cliente);
 
         Venta ventaGuardada = ventasRepository.save(venta);
-        return finanzasSyncService.sincronizarVentaConFinanzas(ventaGuardada);
+        Venta ventaSincronizada = finanzasSyncService.sincronizarVentaConFinanzas(ventaGuardada);
+        actualizarClientePorCompraSiCorresponde(ventaSincronizada);
+        return ventasRepository.findById(ventaSincronizada.getId()).orElse(ventaSincronizada);
     }
 
     @Scheduled(fixedDelayString = "${finanzas.reintento.delay-ms:60000}")
@@ -121,6 +132,84 @@ public class VentasService {
             return number.doubleValue();
         }
         return null;
+    }
+
+    private void validarCanal(Venta venta) {
+        if (venta.getCanal() == null) {
+            throw new RuntimeException("La venta debe indicar el canal");
+        }
+    }
+
+    private ClienteDTO resolverClienteParaVenta(Venta venta) {
+        if (venta.getCanal() == Venta.Canal.POS) {
+            limpiarSnapshotCliente(venta);
+            return null;
+        }
+
+        if (venta.getClienteId() == null) {
+            throw new RuntimeException("Las ventas ECOMMERCE requieren un cliente asociado");
+        }
+
+        ClienteDTO cliente = clientesClient.obtenerPorId(venta.getClienteId());
+        if (cliente == null || cliente.getId() == null) {
+            throw new RuntimeException("No se pudo obtener el cliente asociado a la venta");
+        }
+        if (cliente.getEstado() != null && !"ACTIVO".equalsIgnoreCase(cliente.getEstado())) {
+            throw new RuntimeException("El cliente asociado no esta activo");
+        }
+        return cliente;
+    }
+
+    private void aplicarSnapshotCliente(Venta venta, ClienteDTO cliente) {
+        if (cliente == null) {
+            limpiarSnapshotCliente(venta);
+            return;
+        }
+
+        venta.setClienteId(cliente.getId());
+        venta.setNombreCliente(cliente.getNombre());
+        venta.setApellidoCliente(cliente.getApellido());
+        venta.setEmailCliente(cliente.getEmail());
+        venta.setTelefonoCliente(cliente.getTelefono());
+        venta.setDireccionCliente(cliente.getDireccion());
+        venta.setTipoClienteSnapshot(parseTipoClienteSnapshot(cliente.getTipoCliente()));
+    }
+
+    private void limpiarSnapshotCliente(Venta venta) {
+        venta.setClienteId(null);
+        venta.setNombreCliente(null);
+        venta.setApellidoCliente(null);
+        venta.setEmailCliente(null);
+        venta.setTelefonoCliente(null);
+        venta.setDireccionCliente(null);
+        venta.setTipoClienteSnapshot(null);
+    }
+
+    private Venta.TipoClienteSnapshot parseTipoClienteSnapshot(String tipoCliente) {
+        if (tipoCliente == null || tipoCliente.isBlank()) {
+            return null;
+        }
+        return Venta.TipoClienteSnapshot.valueOf(tipoCliente.toUpperCase());
+    }
+
+    private void actualizarClientePorCompraSiCorresponde(Venta venta) {
+        if (venta.getCanal() != Venta.Canal.ECOMMERCE || venta.getClienteId() == null) {
+            return;
+        }
+
+        try {
+            RegistrarCompraClienteRequest request = new RegistrarCompraClienteRequest();
+            request.setMontoCompra(BigDecimal.valueOf(venta.getMontoTotal()));
+            request.setFechaCompra(venta.getFecha());
+
+            ClienteDTO clienteActualizado = clientesClient.registrarCompra(venta.getClienteId(), request);
+            if (clienteActualizado != null) {
+                aplicarSnapshotCliente(venta, clienteActualizado);
+                ventasRepository.save(venta);
+            }
+        } catch (Exception ignored) {
+            // La venta ya quedo registrada; el historial del cliente se puede reprocesar luego si hace falta.
+        }
     }
 
 }
