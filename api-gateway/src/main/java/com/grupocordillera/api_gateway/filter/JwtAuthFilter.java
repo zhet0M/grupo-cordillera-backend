@@ -1,17 +1,19 @@
 package com.grupocordillera.api_gateway.filter;
 
+import java.io.IOException;
+import java.util.List;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import com.grupocordillera.api_gateway.config.JwtService;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -32,6 +34,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getRequestURI();
+        String method = request.getMethod();
+
+        if ("OPTIONS".equalsIgnoreCase(method)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // Si es ruta pública, dejar pasar
         if (RUTAS_PUBLICAS.stream().anyMatch(path::startsWith)) {
@@ -62,7 +70,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String email = jwtService.extraerEmail(token);
         String rol = jwtService.extraerRol(token);
 
-        if (!tienePermiso(path, request.getMethod(), rol)) {
+        if (!tienePermiso(path, method, rol)) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.getWriter().write("No tienes permisos para acceder a este recurso");
             return;
@@ -110,7 +118,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
         
         if (path.startsWith("/auth/admin")) {
-            return false; // Solo SUPER_ADMIN (manejado arriba)
+            return "ADMIN_USUARIOS".equals(rol);
         }
 
         return true;
