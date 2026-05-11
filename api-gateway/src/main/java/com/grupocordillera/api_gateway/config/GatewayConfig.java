@@ -22,21 +22,25 @@ public class GatewayConfig {
                 new FilterRegistrationBean<>();
         bean.setFilter(jwtAuthFilter);
         bean.addUrlPatterns("/*");
-        bean.setOrder(1);
+        bean.setOrder(2);
         return bean;
     }
 
     // Config de CORS para el frontend
     @Bean
-    public CorsFilter corsFilter() {
+    public FilterRegistrationBean<CorsFilter> corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("*");
+        config.addAllowedOrigin("http://localhost:4200");
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
+        config.addExposedHeader("*");
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
+
+        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
+        bean.setOrder(1);
+        return bean;
     }
 }

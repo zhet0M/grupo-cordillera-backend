@@ -1,6 +1,7 @@
 package com.autenticacion.authentication.service;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.autenticacion.authentication.DTO.LoginRequest;
 import com.autenticacion.authentication.DTO.LoginResponse;
 import com.autenticacion.authentication.DTO.RegistroRequest;
+import com.autenticacion.authentication.DTO.UsuarioAdminResponse;
 import com.autenticacion.authentication.model.Usuario;
 import com.autenticacion.authentication.repository.UsuarioRepository;
 
@@ -78,39 +80,110 @@ public class AuthService {
     }
 
     // admin
-    public List<Usuario> listarPendientes(){
-        return usuarioRepository.findByEstado(Usuario.Estado.PENDIENTE);
+    public List<UsuarioAdminResponse> listarPendientes(){
+        return usuarioRepository.findByEstado(Usuario.Estado.PENDIENTE)
+                .stream()
+                .map(this::toAdminResponse)
+                .toList();
     }
 
-    public List<Usuario> listarTodo(){
-        return usuarioRepository.findAll();
+    public List<UsuarioAdminResponse> listarTodo(){
+        return usuarioRepository.findAll()
+                .stream()
+                .map(this::toAdminResponse)
+                .toList();
     }
     
-    public Usuario aprobarUsuario(Long id, String rol){
+    public UsuarioAdminResponse aprobarUsuario(Long id, String rol, String actorRol){
         Usuario usuario = usuarioRepository.findById(id)
                             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        usuario.setEstado(Usuario.Estado.APROBADO);
-        usuario.setRol(Usuario.Rol.valueOf(rol.toUpperCase()));
+        Usuario.Rol nuevoRol = parseRol(rol);
+        validarAsignacionRol(actorRol, nuevoRol);
 
-        return usuarioRepository.save(usuario);
+        usuario.setEstado(Usuario.Estado.APROBADO);
+        usuario.setRol(nuevoRol);
+
+        return toAdminResponse(usuarioRepository.save(usuario));
     }
 
-    public Usuario rechazarUsuario(Long id){
+    public UsuarioAdminResponse rechazarUsuario(Long id, String actorRol){
         Usuario usuario = usuarioRepository.findById(id)
                             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         
+        if (usuario.getRol() == Usuario.Rol.SUPER_ADMIN && !"SUPER_ADMIN".equals(actorRol)) {
+            throw new RuntimeException("No tienes permisos para rechazar a un SUPER_ADMIN");
+        }
+
         usuario.setEstado(Usuario.Estado.RECHAZADO);
 
-        return usuarioRepository.save(usuario);
+        return toAdminResponse(usuarioRepository.save(usuario));
     }
 
-    public Usuario bloquearUsuario(Long id){
+    public UsuarioAdminResponse bloquearUsuario(Long id, String actorRol){
         Usuario usuario = usuarioRepository.findById(id)
                             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
+        if (usuario.getRol() == Usuario.Rol.SUPER_ADMIN && !"SUPER_ADMIN".equals(actorRol)) {
+            throw new RuntimeException("No tienes permisos para bloquear a un SUPER_ADMIN");
+        }
+
         usuario.setEstado(Usuario.Estado.BLOQUEADO);
 
-        return usuarioRepository.save(usuario);
+        return toAdminResponse(usuarioRepository.save(usuario));
+    }
+
+    public List<String> rolesDisponibles(String actorRol) {
+        if ("SUPER_ADMIN".equals(actorRol)) {
+            return List.of(
+                "ADMIN_USUARIOS",
+                "ADMIN_VENTAS",
+                "ADMIN_INVENTARIO",
+                "ADMIN_FINANZAS",
+                "ADMIN_CLIENTES",
+                "EJECUTIVO",
+                "ANALISTA",
+                "SUPER_ADMIN"
+            );
+        }
+
+        if ("ADMIN_USUARIOS".equals(actorRol)) {
+            return List.of(
+                "ADMIN_VENTAS",
+                "ADMIN_INVENTARIO",
+                "ADMIN_FINANZAS",
+                "ADMIN_CLIENTES",
+                "EJECUTIVO",
+                "ANALISTA"
+            );
+        }
+
+        throw new RuntimeException("No tienes permisos para gestionar roles");
+    }
+
+    private UsuarioAdminResponse toAdminResponse(Usuario usuario) {
+        return UsuarioAdminResponse.builder()
+                .id(usuario.getId())
+                .username(usuario.getUsername())
+                .email(usuario.getEmail())
+                .rol(usuario.getRol() != null ? usuario.getRol().name() : null)
+                .estado(usuario.getEstado().name())
+                .build();
+    }
+
+    private Usuario.Rol parseRol(String rol) {
+        try {
+            return Usuario.Rol.valueOf(rol.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException | NullPointerException ex) {
+            throw new RuntimeException("Rol invalido");
+        }
+    }
+
+    private void validarAsignacionRol(String actorRol, Usuario.Rol nuevoRol) {
+        List<String> rolesPermitidos = rolesDisponibles(actorRol);
+
+        if (!rolesPermitidos.contains(nuevoRol.name())) {
+            throw new RuntimeException("No tienes permisos para asignar este rol");
+        }
     }
 }
