@@ -99,5 +99,3 @@ mvn spring-boot:run
    GET http://localhost:8080/clientes
    Authorization: Bearer [tu-token-jwt]
    ```
-
-<parameter name="filePath">c:\Users\sapbe\Desktop\Grupo Cordillera-FullStack III\README.md
