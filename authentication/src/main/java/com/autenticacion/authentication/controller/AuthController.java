@@ -81,6 +81,13 @@ public class AuthController {
             return ResponseEntity.ok(authService.bloquearUsuario(id, obtenerRolActual(authentication)));
     }
 
+    @PutMapping("/admin/usuarios/{id}/desbloquear")
+    public ResponseEntity<UsuarioAdminResponse> desbloquear(
+        @PathVariable Long id,
+        Authentication authentication){
+            return ResponseEntity.ok(authService.desbloquearUsuario(id, obtenerRolActual(authentication)));
+    }
+
     private String obtenerRolActual(Authentication authentication) {
         return authentication.getAuthorities()
                 .stream()

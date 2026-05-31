@@ -133,6 +133,19 @@ public class AuthService {
         return toAdminResponse(usuarioRepository.save(usuario));
     }
 
+    public UsuarioAdminResponse desbloquearUsuario(Long id, String actorRol){
+        Usuario usuario = usuarioRepository.findById(id)
+                            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (usuario.getRol() == Usuario.Rol.SUPER_ADMIN && !"SUPER_ADMIN".equals(actorRol)) {
+            throw new RuntimeException("No tienes permisos para desbloquear a un SUPER_ADMIN");
+        }
+
+        usuario.setEstado(Usuario.Estado.APROBADO);
+
+        return toAdminResponse(usuarioRepository.save(usuario));
+    }
+
     public List<String> rolesDisponibles(String actorRol) {
         if ("SUPER_ADMIN".equals(actorRol)) {
             return List.of(
