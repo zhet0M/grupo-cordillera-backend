@@ -118,7 +118,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
         
         if (path.startsWith("/auth/admin")) {
-            return "ADMIN_USUARIOS".equals(rol);
+            return "ADMIN_USUARIOS".equals(rol) || "SUPER_ADMIN".equals(rol);
         }
 
         return true;
