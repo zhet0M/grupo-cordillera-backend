@@ -170,6 +170,50 @@ services:
     networks:
       - cordillera-net
 
+  db-alertas:
+    image: postgres:15
+    container_name: db-alertas
+    environment:
+      POSTGRES_DB: bd_alertas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5438:5432"
+    volumes:
+      - db-alertas-data:/var/lib/postgresql/data
+    networks:
+      - cordillera-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ms-alertas:
+    build: ../alertas
+    container_name: ms-alertas
+    ports:
+      - "8087:8087"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-alertas:5432/bd_alertas
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+      INVENTARIO_URL: http://inventario:8083/inventario
+      VENTAS_URL: http://ventas:8082/ventas
+      FINANZAS_URL: http://finanzas:8084/finanzas
+      ALERTAS_DETECCION_DELAY_MS: 15000
+    depends_on:
+      db-alertas:
+        condition: service_healthy
+      inventario:
+        condition: service_started
+      ventas:
+        condition: service_started
+      finanzas:
+        condition: service_started
+    networks:
+      - cordillera-net
+
   ms-kpis:
     build: ../kpis
     container_name: ms-kpis
@@ -202,6 +246,7 @@ services:
       - inventario
       - finanzas
       - clientes
+      - ms-alertas
       - ms-kpis
     networks:
       - cordillera-net
@@ -212,6 +257,7 @@ volumes:
   db-inventario-data:
   db-finanzas-data:
   db-clientes-data:
+  db-alertas-data:
 
 networks:
   cordillera-net:
