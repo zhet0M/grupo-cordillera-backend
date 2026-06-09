@@ -233,6 +233,22 @@ services:
     networks:
       - cordillera-net
 
+  ms-reportes:
+    build: ../reportes
+    container_name: ms-reportes
+    ports:
+      - "8088:8088"
+    environment:
+      VENTAS_URL: http://ventas:8082/ventas
+      INVENTARIO_URL: http://inventario:8083/inventario
+      FINANZAS_URL: http://finanzas:8084/finanzas
+    depends_on:
+      - ventas
+      - inventario
+      - finanzas
+    networks:
+      - cordillera-net
+
   api-gateway:
     build: .
     container_name: api-gateway
@@ -248,6 +264,7 @@ services:
       - clientes
       - ms-alertas
       - ms-kpis
+      - ms-reportes
     networks:
       - cordillera-net
 
