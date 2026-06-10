@@ -11,6 +11,7 @@ import com.grupocordillera.finanzas.dto.MovimientoFinancieroRequest;
 import com.grupocordillera.finanzas.dto.ProductoInventarioDTO;
 import com.grupocordillera.finanzas.dto.ResumenFinancieroDTO;
 import com.grupocordillera.finanzas.model.MovimientoFinanciero;
+import com.grupocordillera.finanzas.model.Sucursal;
 import com.grupocordillera.finanzas.repository.MovimientoFinancieroRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class FinanzasService {
     private MovimientoFinanciero crearMovimiento(MovimientoFinancieroRequest request) {
         ProductoInventarioDTO producto = obtenerProductoExistente(request.getSkuProducto());
         validarConsistencia(request, producto);
+        Sucursal sucursal = Sucursal.from(request.getSucursal());
 
         MovimientoFinanciero movimiento = new MovimientoFinanciero();
         movimiento.setVentaId(request.getVentaId());
@@ -45,7 +47,7 @@ public class FinanzasService {
         movimiento.setCosto(obtenerCosto(request, producto));
         movimiento.setMargen(movimiento.getIngresos().subtract(movimiento.getCosto()));
         movimiento.setFechaRegistro(request.getFechaRegistro() != null ? request.getFechaRegistro() : LocalDate.now());
-        movimiento.setSucursal(producto.getSucursal() != null ? producto.getSucursal() : request.getSucursal());
+        movimiento.setSucursal(producto.getSucursal() != null ? Sucursal.from(producto.getSucursal()).valor() : sucursal.valor());
         movimiento.setTipoMovimiento(request.getTipoMovimiento());
         return repository.save(movimiento);
     }
@@ -64,7 +66,7 @@ public class FinanzasService {
     }
 
     public List<MovimientoFinanciero> obtenerPorSucursal(String sucursal) {
-        return repository.findBySucursalIgnoreCase(sucursal);
+        return repository.findBySucursalIgnoreCase(Sucursal.from(sucursal).valor());
     }
 
     public List<MovimientoFinanciero> obtenerPorTipo(MovimientoFinanciero.TipoMovimiento tipoMovimiento) {
@@ -92,10 +94,11 @@ public class FinanzasService {
     }
 
     public ResumenFinancieroDTO obtenerTotalesPorSucursal(String sucursal) {
+        String sucursalNormalizada = Sucursal.from(sucursal).valor();
         return new ResumenFinancieroDTO(
-                repository.sumIngresosBySucursal(sucursal),
-                repository.sumCostosBySucursal(sucursal),
-                repository.sumMargenBySucursal(sucursal)
+                repository.sumIngresosBySucursal(sucursalNormalizada),
+                repository.sumCostosBySucursal(sucursalNormalizada),
+                repository.sumMargenBySucursal(sucursalNormalizada)
         );
     }
 

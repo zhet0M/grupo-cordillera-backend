@@ -13,6 +13,7 @@ import com.grupocordillera.ventas.client.InventarioClient;
 import com.grupocordillera.ventas.dto.ClienteDTO;
 import com.grupocordillera.ventas.dto.RegistrarCompraClienteRequest;
 import com.grupocordillera.ventas.model.Venta;
+import com.grupocordillera.ventas.model.Sucursal;
 import com.grupocordillera.ventas.repository.VentasRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -30,16 +31,21 @@ public class VentasService {
 
     public Venta registrarVenta(Venta venta) {
         validarCanal(venta);
+        Sucursal sucursalVenta = Sucursal.from(venta.getSucursal());
+        venta.setSucursal(sucursalVenta.valor());
         ClienteDTO cliente = resolverClienteParaVenta(venta);
 
         Map<String, Object> producto = inventarioClient.porSku(venta.getSkuProducto());
         Long productoId = extraerLong(producto.get("id"));
         String nombreProducto = (String) producto.get("nombre");
         Double precioUnitario = extraerDouble(producto.get("precio"));
+        String sucursalProducto = extraerTexto(producto.get("sucursal"));
 
         if (productoId == null || nombreProducto == null || precioUnitario == null) {
             throw new RuntimeException("Respuesta invalida desde inventario al obtener el producto");
         }
+
+        validarSucursalProducto(sucursalVenta.valor(), venta.getSkuProducto(), sucursalProducto);
 
         inventarioClient.descontarStock(venta.getSkuProducto(), venta.getCantidad());
 
@@ -91,7 +97,7 @@ public class VentasService {
     }
 
     public List<Venta> obtenerPorSucursal(String sucursal) {
-        return ventasRepository.findBySucursal(sucursal);
+        return ventasRepository.findBySucursal(Sucursal.from(sucursal).valor());
     }
 
     public List<Venta> obtenerPorRango(LocalDate inicio, LocalDate fin) {
@@ -108,7 +114,7 @@ public class VentasService {
     }
 
     public Double totalPorSucursal(String sucursal) {
-        Double total = ventasRepository.sumMontoTotalBySucursal(sucursal);
+        Double total = ventasRepository.sumMontoTotalBySucursal(Sucursal.from(sucursal).valor());
         return total != null ? total : 0.0;
     }
 
@@ -134,9 +140,29 @@ public class VentasService {
         return null;
     }
 
+    private String extraerTexto(Object valor) {
+        if (valor == null) {
+            return null;
+        }
+        String texto = String.valueOf(valor).trim();
+        return texto.isEmpty() ? null : texto;
+    }
+
     private void validarCanal(Venta venta) {
         if (venta.getCanal() == null) {
             throw new RuntimeException("La venta debe indicar el canal");
+        }
+    }
+
+    private void validarSucursalProducto(String sucursalVenta, String skuProducto, String sucursalProducto) {
+        if (sucursalProducto == null) {
+            throw new IllegalArgumentException("El producto SKU " + skuProducto + " no tiene sucursal asignada");
+        }
+
+        if (!Sucursal.from(sucursalProducto).valor().equalsIgnoreCase(sucursalVenta.trim())) {
+            throw new IllegalArgumentException(
+                    "El producto SKU " + skuProducto + " pertenece a la sucursal " + sucursalProducto +
+                            ", no a " + sucursalVenta);
         }
     }
 
