@@ -13,12 +13,15 @@ import com.autenticacion.authentication.DTO.RegistroRequest;
 import com.autenticacion.authentication.DTO.UsuarioAdminResponse;
 import com.autenticacion.authentication.model.Usuario;
 import com.autenticacion.authentication.repository.UsuarioRepository;
+import com.autenticacion.authentication.exception.InvalidCredentialsException;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+
+    private static final String CREDENCIALES_INVALIDAS = "Correo o contraseña incorrectos";
 
     private final UsuarioRepository usuarioRepository;
     private final JwtService jwtService;
@@ -29,9 +32,11 @@ public class AuthService {
 
     //Registro
     public Usuario registrar(RegistroRequest request){
+        String email = request.getEmail() == null ? "" : request.getEmail().trim().toLowerCase(Locale.ROOT);
+        String dominio = dominioPermitido == null ? "" : dominioPermitido.trim().toLowerCase(Locale.ROOT);
         
         //Validacion dominio email
-        if (!request.getEmail().endsWith(dominioPermitido)){
+        if (!email.endsWith(dominio)){
             throw new RuntimeException("Solo se permiten correos corporativos: " + dominioPermitido);
         }
 
@@ -42,7 +47,7 @@ public class AuthService {
 
         Usuario usuario = new Usuario();
         usuario.setUsername(request.getUsername());
-        usuario.setEmail(request.getEmail());
+        usuario.setEmail(email);
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         usuario.setEstado(Usuario.Estado.PENDIENTE);
         usuario.setRol(null);
@@ -54,7 +59,7 @@ public class AuthService {
     public LoginResponse login(LoginRequest request){
         Usuario usuario = usuarioRepository
                             .findByEmail(request.getEmail())
-                            .orElseThrow(()-> new RuntimeException("Usuario no encontrado"));
+                            .orElseThrow(() -> new InvalidCredentialsException(CREDENCIALES_INVALIDAS));
         
         switch (usuario.getEstado()) {
             case PENDIENTE -> throw new RuntimeException("Tu cuenta esta pendiente de aprobación");
@@ -65,7 +70,7 @@ public class AuthService {
         }
 
         if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())){
-            throw new RuntimeException("Contraseña incorrecta");
+            throw new InvalidCredentialsException(CREDENCIALES_INVALIDAS);
         }
 
         String token = jwtService.generarToken(usuario.getEmail(), usuario.getRol().name());

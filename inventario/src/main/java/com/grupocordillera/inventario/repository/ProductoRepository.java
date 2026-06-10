@@ -10,6 +10,7 @@ import java.util.Optional;
 @Repository
 public interface ProductoRepository extends JpaRepository<Producto, Long> {
     Optional<Producto> findBySku(String sku);
+    List<Producto> findBySkuStartingWith(String skuPrefix);
     List<Producto> findBySucursal(String sucursal);
     List<Producto> findByCategoria(String categoria);
     List<Producto> findByEstado(Producto.Estado estado);
