@@ -268,6 +268,71 @@ services:
     networks:
       - cordillera-net
 
+  db-metabase:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: metabase
+      POSTGRES_USER: metabase
+      POSTGRES_PASSWORD: metabase123
+    ports:
+      - "5440:5432"
+    volumes:
+      - db-metabase-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - cordillera-net
+
+  metabase:
+    image: metabase/metabase:latest
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: metabase
+      MB_DB_PASS: metabase123
+      MB_DB_HOST: db-metabase
+    depends_on:
+      db-metabase:
+        condition: service_healthy
+    networks:
+      - cordillera-net
+
+  sonarqube-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonar
+    ports:
+      - "5439:5432"
+    volumes:
+      - sonarqube-db-data:/var/lib/postgresql/data
+    networks:
+      - cordillera-net
+
+  sonarqube:
+    image: sonarqube:lts-community
+    depends_on:
+      - sonarqube-db
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-extensions:/opt/sonarqube/extensions
+      - sonarqube-logs:/opt/sonarqube/logs
+    networks:
+      - cordillera-net
+
 volumes:
   db-auth-data:
   db-ventas-data:
@@ -275,6 +340,11 @@ volumes:
   db-finanzas-data:
   db-clientes-data:
   db-alertas-data:
+  db-metabase-data:
+  sonarqube-db-data:
+  sonarqube-data:
+  sonarqube-extensions:
+  sonarqube-logs:
 
 networks:
   cordillera-net:
