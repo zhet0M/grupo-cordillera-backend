@@ -99,3 +99,25 @@ mvn spring-boot:run
    GET http://localhost:8080/clientes
    Authorization: Bearer [tu-token-jwt]
    ```
+
+## 🔎 SonarQube Local
+
+Para análisis estático y cobertura por microservicio:
+
+```bash
+docker compose -f docker-compose.sonarqube.yml up -d
+```
+
+Luego ejecuta en cada módulo:
+
+```bash
+mvn clean verify sonar:sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.token=TU_TOKEN -Dsonar.projectKey=TU_CLAVE_UNICA
+```
+
+## 📊 Metabase Local
+
+```bash
+docker compose -f docker-compose.metabase.yml up -d
+```
+
+Revisa `METABASE.md` para dejar el embed visible en el frontend.
