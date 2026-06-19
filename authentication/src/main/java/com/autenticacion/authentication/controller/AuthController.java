@@ -19,11 +19,13 @@ import com.autenticacion.authentication.DTO.RegistroRequest;
 import com.autenticacion.authentication.DTO.UsuarioAdminResponse;
 import com.autenticacion.authentication.service.AuthService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Autenticación", description = "Registro, inicio de sesión y administración de usuarios")
 @RequiredArgsConstructor
 public class AuthController {
 

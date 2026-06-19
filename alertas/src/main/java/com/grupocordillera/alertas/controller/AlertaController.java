@@ -5,6 +5,7 @@ import com.grupocordillera.alertas.dto.AlertasResumenResponse;
 import com.grupocordillera.alertas.dto.CrearAlertaRequest;
 import com.grupocordillera.alertas.service.DeteccionAlertasService;
 import com.grupocordillera.alertas.service.AlertaService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/alertas")
+@Tag(name = "Alertas", description = "Creación, consulta y detección de alertas")
 @RequiredArgsConstructor
 public class AlertaController {
 

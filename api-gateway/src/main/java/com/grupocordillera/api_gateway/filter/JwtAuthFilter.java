@@ -1,6 +1,6 @@
 package com.grupocordillera.api_gateway.filter;
 
-import java.io.IOException;
+import java.io.IOException;     
 import java.util.List;
 
 import org.springframework.http.HttpHeaders;
@@ -24,7 +24,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     // Rutas públicas que no necesitan token
     private static final List<String> RUTAS_PUBLICAS = List.of(
             "/auth/login",
-            "/auth/registro"
+            "/auth/registro",
+            "/swagger-ui.html",
+            "/swagger-ui/",
+            "/swagger-ui",
+            "/v3/api-docs",
+            "/v3/api-docs/",
+            "/webjars/"
     );
 
     @Override

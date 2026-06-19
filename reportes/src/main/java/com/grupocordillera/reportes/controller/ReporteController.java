@@ -1,6 +1,7 @@
 package com.grupocordillera.reportes.controller;
 
 import com.grupocordillera.reportes.service.ReporteService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ContentDisposition;
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/reportes")
+@Tag(name = "Reportes", description = "Generación de reportes PDF de ventas, inventario y finanzas")
 @RequiredArgsConstructor
 public class ReporteController {
 

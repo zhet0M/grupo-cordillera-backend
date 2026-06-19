@@ -17,10 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.grupocordillera.ventas.model.Venta;
 import com.grupocordillera.ventas.service.VentasService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/ventas")
+@Tag(name = "Ventas", description = "Registro, consulta y reproceso de ventas")
 @RequiredArgsConstructor
 public class VentasController {
 
