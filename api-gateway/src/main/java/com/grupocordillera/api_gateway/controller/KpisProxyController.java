@@ -8,8 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/kpis")
+@Tag(name = "KPIs Gateway", description = "Proxy del gateway hacia el servicio de KPIs")
 public class KpisProxyController {
 
     private final RestTemplate restTemplate;

@@ -18,11 +18,13 @@ import com.grupocordillera.finanzas.dto.ResumenFinancieroDTO;
 import com.grupocordillera.finanzas.model.MovimientoFinanciero;
 import com.grupocordillera.finanzas.service.FinanzasService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/finanzas")
+@Tag(name = "Finanzas", description = "Movimientos, totales y resúmenes financieros")
 @RequiredArgsConstructor
 public class FinanzasController {
 

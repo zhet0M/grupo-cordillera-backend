@@ -3,6 +3,7 @@ package com.grupocordillera.inventario.controller;
 import com.grupocordillera.inventario.dto.DescuentoStockRequest;
 import com.grupocordillera.inventario.model.Producto;
 import com.grupocordillera.inventario.service.InventarioService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/inventario")
+@Tag(name = "Inventario", description = "Registro, consulta y descuento de stock")
 @RequiredArgsConstructor
 public class InventarioController {
 
