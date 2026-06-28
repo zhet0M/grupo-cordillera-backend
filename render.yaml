@@ -8,7 +8,7 @@ services:
     env: docker
     dockerfilePath: ./grupo-cordillera-backend/api-gateway/Dockerfile
     dockerContext: ./grupo-cordillera-backend/api-gateway
-    region: saopaulo
+    region: virginia
     plan: free
     envVars:
       # Variables para conectar a los microservicios
@@ -62,7 +62,7 @@ services:
     env: docker
     dockerfilePath: ./grupo-cordillera-backend/authentication/Dockerfile
     dockerContext: ./grupo-cordillera-backend/authentication
-    region: saopaulo
+    region: virginia
     plan: free
     envVars:
       - key: SPRING_DATASOURCE_URL
@@ -86,7 +86,7 @@ services:
     env: docker
     dockerfilePath: ./grupo-cordillera-backend/ventas/Dockerfile
     dockerContext: ./grupo-cordillera-backend/ventas
-    region: saopaulo
+    region: virginia
     plan: free
     envVars:
       - key: SPRING_DATASOURCE_URL
@@ -114,7 +114,7 @@ services:
     env: docker
     dockerfilePath: ./grupo-cordillera-backend/inventario/Dockerfile
     dockerContext: ./grupo-cordillera-backend/inventario
-    region: saopaulo
+    region: virginia
     plan: free
     envVars:
       - key: SPRING_DATASOURCE_URL
@@ -136,7 +136,7 @@ services:
     env: docker
     dockerfilePath: ./grupo-cordillera-backend/finanzas/Dockerfile
     dockerContext: ./grupo-cordillera-backend/finanzas
-    region: saopaulo
+    region: virginia
     plan: free
     envVars:
       - key: SPRING_DATASOURCE_URL
@@ -161,7 +161,7 @@ services:
     env: docker
     dockerfilePath: ./grupo-cordillera-backend/clientes/Dockerfile
     dockerContext: ./grupo-cordillera-backend/clientes
-    region: saopaulo
+    region: virginia
     plan: free
     envVars:
       - key: SPRING_DATASOURCE_URL
@@ -183,7 +183,7 @@ services:
     env: docker
     dockerfilePath: ./grupo-cordillera-backend/kpis/Dockerfile
     dockerContext: ./grupo-cordillera-backend/kpis
-    region: saopaulo
+    region: virginia
     plan: free
     envVars:
       # NOTA: Después de deployar, actualiza estas URLs con las reales
@@ -202,7 +202,7 @@ services:
     env: docker
     dockerfilePath: ./grupo-cordillera-backend/alertas/Dockerfile
     dockerContext: ./grupo-cordillera-backend/alertas
-    region: saopaulo
+    region: virginia
     plan: free
     envVars:
       - key: SPRING_DATASOURCE_URL
@@ -231,7 +231,7 @@ services:
     env: docker
     dockerfilePath: ./grupo-cordillera-backend/reportes/Dockerfile
     dockerContext: ./grupo-cordillera-backend/reportes
-    region: saopaulo
+    region: virginia
     plan: free
     envVars:
       # NOTA: Después de deployar, actualiza estas URLs con las reales
@@ -247,6 +247,6 @@ databases:
   - name: gc-db
     databaseName: grupocordillera
     user: grupocordillera
-    region: saopaulo
+    region: virginia
     plan: free
     ipAllowList: []  # Permite acceso solo desde Render (seguro)
