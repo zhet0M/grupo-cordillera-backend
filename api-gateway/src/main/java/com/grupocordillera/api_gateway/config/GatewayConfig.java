@@ -1,7 +1,5 @@
 package com.grupocordillera.api_gateway.config;
 
-import com.grupocordillera.api_gateway.filter.JwtAuthFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +7,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+
+import com.grupocordillera.api_gateway.filter.JwtAuthFilter;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
@@ -31,10 +33,13 @@ public class GatewayConfig {
     @Bean
     public FilterRegistrationBean<CorsFilter> corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
+        // Permitir localhost para desarrollo y tu dominio de Vercel para producción
         config.addAllowedOrigin("http://localhost:4200");
+        config.addAllowedOrigin("https://frontend-grupo-cordillera-angular.vercel.app");
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
         config.addExposedHeader("*");
+        config.setAllowCredentials(true); // Permitir credenciales (tokens)
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
