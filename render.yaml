@@ -65,10 +65,18 @@ services:
     region: virginia
     plan: free
     envVars:
-      - key: SPRING_DATASOURCE_URL
+      - key: DB_HOST
         fromDatabase:
           name: gc-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: gc-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: gc-db
+          property: database
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: gc-db
@@ -89,10 +97,18 @@ services:
     region: virginia
     plan: free
     envVars:
-      - key: SPRING_DATASOURCE_URL
+      - key: DB_HOST
         fromDatabase:
           name: gc-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: gc-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: gc-db
+          property: database
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: gc-db
@@ -117,10 +133,18 @@ services:
     region: virginia
     plan: free
     envVars:
-      - key: SPRING_DATASOURCE_URL
+      - key: DB_HOST
         fromDatabase:
           name: gc-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: gc-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: gc-db
+          property: database
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: gc-db
@@ -139,10 +163,18 @@ services:
     region: virginia
     plan: free
     envVars:
-      - key: SPRING_DATASOURCE_URL
+      - key: DB_HOST
         fromDatabase:
           name: gc-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: gc-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: gc-db
+          property: database
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: gc-db
@@ -164,10 +196,18 @@ services:
     region: virginia
     plan: free
     envVars:
-      - key: SPRING_DATASOURCE_URL
+      - key: DB_HOST
         fromDatabase:
           name: gc-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: gc-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: gc-db
+          property: database
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: gc-db
@@ -205,10 +245,18 @@ services:
     region: virginia
     plan: free
     envVars:
-      - key: SPRING_DATASOURCE_URL
+      - key: DB_HOST
         fromDatabase:
           name: gc-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: gc-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: gc-db
+          property: database
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: gc-db
