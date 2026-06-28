@@ -11,47 +11,23 @@ services:
     region: virginia
     plan: free
     envVars:
-      # Variables para conectar a los microservicios
+      # Variables para conectar a los microservicios (usando URLs internas de Render)
       - key: AUTH_SERVICE_URL
-        fromService:
-          name: gc-authentication
-          type: web
-          property: host
+        value: "http://gc-authentication:10000"
       - key: VENTAS_SERVICE_URL
-        fromService:
-          name: gc-ventas
-          type: web
-          property: host
+        value: "http://gc-ventas:10000"
       - key: INVENTARIO_SERVICE_URL
-        fromService:
-          name: gc-inventario
-          type: web
-          property: host
+        value: "http://gc-inventario:10000"
       - key: FINANZAS_SERVICE_URL
-        fromService:
-          name: gc-finanzas
-          type: web
-          property: host
+        value: "http://gc-finanzas:10000"
       - key: CLIENTES_SERVICE_URL
-        fromService:
-          name: gc-clientes
-          type: web
-          property: host
+        value: "http://gc-clientes:10000"
       - key: KPIS_SERVICE_URL
-        fromService:
-          name: gc-kpis
-          type: web
-          property: host
+        value: "http://gc-kpis:10000"
       - key: ALERTAS_SERVICE_URL
-        fromService:
-          name: gc-alertas
-          type: web
-          property: host
+        value: "http://gc-alertas:10000"
       - key: REPORTES_SERVICE_URL
-        fromService:
-          name: gc-reportes
-          type: web
-          property: host
+        value: "http://gc-reportes:10000"
       # JWT Secret (mismo que tus microservicios)
       - key: JWT_SECRET
         value: clave-secreta-grupo-cordillera-2025-muy-larga
@@ -117,12 +93,10 @@ services:
         fromDatabase:
           name: gc-db
           property: password
-      # NOTA: Después de deployar, actualiza esta URL con la real de gc-inventario
       - key: INVENTARIO_URL
-        value: "http://localhost:8083/inventario"
-      # NOTA: Después de deployar, actualiza esta URL con la real de gc-finanzas
+        value: "http://gc-inventario:10000/inventario"
       - key: FINANZAS_URL
-        value: "http://localhost:8084/finanzas"
+        value: "http://gc-finanzas:10000/finanzas"
 
   # 4. Inventario Microservice
   - type: web
@@ -183,9 +157,8 @@ services:
         fromDatabase:
           name: gc-db
           property: password
-      # NOTA: Después de deployar, actualiza esta URL con la real de gc-inventario
       - key: INVENTARIO_URL
-        value: "http://localhost:8083/inventario"
+        value: "http://gc-inventario:10000/inventario"
 
   # 6. Clientes Microservice
   - type: web
@@ -226,15 +199,14 @@ services:
     region: virginia
     plan: free
     envVars:
-      # NOTA: Después de deployar, actualiza estas URLs con las reales
       - key: VENTAS_URL
-        value: "http://localhost:8082/ventas"
+        value: "http://gc-ventas:10000/ventas"
       - key: INVENTARIO_URL
-        value: "http://localhost:8083/inventario"
+        value: "http://gc-inventario:10000/inventario"
       - key: FINANZAS_URL
-        value: "http://localhost:8084/finanzas"
+        value: "http://gc-finanzas:10000/finanzas"
       - key: CLIENTES_URL
-        value: "http://localhost:8085/clientes"
+        value: "http://gc-clientes:10000/clientes"
 
   # 8. Alertas Microservice
   - type: web
@@ -265,13 +237,12 @@ services:
         fromDatabase:
           name: gc-db
           property: password
-      # NOTA: Después de deployar, actualiza estas URLs con las reales
       - key: VENTAS_URL
-        value: "http://localhost:8082/ventas"
+        value: "http://gc-ventas:10000/ventas"
       - key: INVENTARIO_URL
-        value: "http://localhost:8083/inventario"
+        value: "http://gc-inventario:10000/inventario"
       - key: FINANZAS_URL
-        value: "http://localhost:8084/finanzas"
+        value: "http://gc-finanzas:10000/finanzas"
 
   # 9. Reportes Microservice
   - type: web
@@ -282,19 +253,58 @@ services:
     region: virginia
     plan: free
     envVars:
-      # NOTA: Después de deployar, actualiza estas URLs con las reales
       - key: VENTAS_URL
-        value: "http://localhost:8082/ventas"
+        value: "http://gc-ventas:10000/ventas"
       - key: INVENTARIO_URL
-        value: "http://localhost:8083/inventario"
+        value: "http://gc-inventario:10000/inventario"
       - key: FINANZAS_URL
-        value: "http://localhost:8084/finanzas"
+        value: "http://gc-finanzas:10000/finanzas"
 
-# 10. Base de Datos PostgreSQL (gratuita en Render)
+  # 10. Metabase
+  - type: web
+    name: gc-metabase
+    env: docker
+    image:
+      url: metabase/metabase:latest
+    region: virginia
+    plan: free
+    envVars:
+      - key: MB_DB_TYPE
+        value: postgres
+      - key: MB_DB_DBNAME
+        fromDatabase:
+          name: gc-metabase-db
+          property: database
+      - key: MB_DB_PORT
+        fromDatabase:
+          name: gc-metabase-db
+          property: port
+      - key: MB_DB_USER
+        fromDatabase:
+          name: gc-metabase-db
+          property: user
+      - key: MB_DB_PASS
+        fromDatabase:
+          name: gc-metabase-db
+          property: password
+      - key: MB_DB_HOST
+        fromDatabase:
+          name: gc-metabase-db
+          property: host
+
+# 11. Base de Datos Principal (gratuita en Render)
 databases:
   - name: gc-db
     databaseName: grupocordillera
     user: grupocordillera
+    region: virginia
+    plan: free
+    ipAllowList: []  # Permite acceso solo desde Render (seguro)
+  
+  # 12. Base de Datos para Metabase
+  - name: gc-metabase-db
+    databaseName: metabase
+    user: metabase
     region: virginia
     plan: free
     ipAllowList: []  # Permite acceso solo desde Render (seguro)
