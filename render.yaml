@@ -1,0 +1,252 @@
+# render.yaml: Blueprint para Render (usa tus Dockerfiles individuales)
+# Ubicación: raíz del repositorio
+
+services:
+  # 1. API Gateway (punto de entrada principal)
+  - type: web
+    name: gc-api-gateway
+    env: docker
+    dockerfilePath: ./grupo-cordillera-backend/api-gateway/Dockerfile
+    dockerContext: ./grupo-cordillera-backend/api-gateway
+    region: saopaulo
+    plan: free
+    envVars:
+      # Variables para conectar a los microservicios
+      - key: AUTH_SERVICE_URL
+        fromService:
+          name: gc-authentication
+          type: web
+          property: host
+      - key: VENTAS_SERVICE_URL
+        fromService:
+          name: gc-ventas
+          type: web
+          property: host
+      - key: INVENTARIO_SERVICE_URL
+        fromService:
+          name: gc-inventario
+          type: web
+          property: host
+      - key: FINANZAS_SERVICE_URL
+        fromService:
+          name: gc-finanzas
+          type: web
+          property: host
+      - key: CLIENTES_SERVICE_URL
+        fromService:
+          name: gc-clientes
+          type: web
+          property: host
+      - key: KPIS_SERVICE_URL
+        fromService:
+          name: gc-kpis
+          type: web
+          property: host
+      - key: ALERTAS_SERVICE_URL
+        fromService:
+          name: gc-alertas
+          type: web
+          property: host
+      - key: REPORTES_SERVICE_URL
+        fromService:
+          name: gc-reportes
+          type: web
+          property: host
+      # JWT Secret (mismo que tus microservicios)
+      - key: JWT_SECRET
+        value: clave-secreta-grupo-cordillera-2025-muy-larga
+
+  # 2. Authentication Microservice
+  - type: web
+    name: gc-authentication
+    env: docker
+    dockerfilePath: ./grupo-cordillera-backend/authentication/Dockerfile
+    dockerContext: ./grupo-cordillera-backend/authentication
+    region: saopaulo
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: gc-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: gc-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: gc-db
+          property: password
+      - key: JWT_SECRET
+        value: clave-secreta-grupo-cordillera-2025-muy-larga
+
+  # 3. Ventas Microservice
+  - type: web
+    name: gc-ventas
+    env: docker
+    dockerfilePath: ./grupo-cordillera-backend/ventas/Dockerfile
+    dockerContext: ./grupo-cordillera-backend/ventas
+    region: saopaulo
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: gc-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: gc-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: gc-db
+          property: password
+      # NOTA: Después de deployar, actualiza esta URL con la real de gc-inventario
+      - key: INVENTARIO_URL
+        value: "http://localhost:8083/inventario"
+      # NOTA: Después de deployar, actualiza esta URL con la real de gc-finanzas
+      - key: FINANZAS_URL
+        value: "http://localhost:8084/finanzas"
+
+  # 4. Inventario Microservice
+  - type: web
+    name: gc-inventario
+    env: docker
+    dockerfilePath: ./grupo-cordillera-backend/inventario/Dockerfile
+    dockerContext: ./grupo-cordillera-backend/inventario
+    region: saopaulo
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: gc-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: gc-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: gc-db
+          property: password
+
+  # 5. Finanzas Microservice
+  - type: web
+    name: gc-finanzas
+    env: docker
+    dockerfilePath: ./grupo-cordillera-backend/finanzas/Dockerfile
+    dockerContext: ./grupo-cordillera-backend/finanzas
+    region: saopaulo
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: gc-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: gc-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: gc-db
+          property: password
+      # NOTA: Después de deployar, actualiza esta URL con la real de gc-inventario
+      - key: INVENTARIO_URL
+        value: "http://localhost:8083/inventario"
+
+  # 6. Clientes Microservice
+  - type: web
+    name: gc-clientes
+    env: docker
+    dockerfilePath: ./grupo-cordillera-backend/clientes/Dockerfile
+    dockerContext: ./grupo-cordillera-backend/clientes
+    region: saopaulo
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: gc-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: gc-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: gc-db
+          property: password
+
+  # 7. KPIs Microservice
+  - type: web
+    name: gc-kpis
+    env: docker
+    dockerfilePath: ./grupo-cordillera-backend/kpis/Dockerfile
+    dockerContext: ./grupo-cordillera-backend/kpis
+    region: saopaulo
+    plan: free
+    envVars:
+      # NOTA: Después de deployar, actualiza estas URLs con las reales
+      - key: VENTAS_URL
+        value: "http://localhost:8082/ventas"
+      - key: INVENTARIO_URL
+        value: "http://localhost:8083/inventario"
+      - key: FINANZAS_URL
+        value: "http://localhost:8084/finanzas"
+      - key: CLIENTES_URL
+        value: "http://localhost:8085/clientes"
+
+  # 8. Alertas Microservice
+  - type: web
+    name: gc-alertas
+    env: docker
+    dockerfilePath: ./grupo-cordillera-backend/alertas/Dockerfile
+    dockerContext: ./grupo-cordillera-backend/alertas
+    region: saopaulo
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: gc-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: gc-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: gc-db
+          property: password
+      # NOTA: Después de deployar, actualiza estas URLs con las reales
+      - key: VENTAS_URL
+        value: "http://localhost:8082/ventas"
+      - key: INVENTARIO_URL
+        value: "http://localhost:8083/inventario"
+      - key: FINANZAS_URL
+        value: "http://localhost:8084/finanzas"
+
+  # 9. Reportes Microservice
+  - type: web
+    name: gc-reportes
+    env: docker
+    dockerfilePath: ./grupo-cordillera-backend/reportes/Dockerfile
+    dockerContext: ./grupo-cordillera-backend/reportes
+    region: saopaulo
+    plan: free
+    envVars:
+      # NOTA: Después de deployar, actualiza estas URLs con las reales
+      - key: VENTAS_URL
+        value: "http://localhost:8082/ventas"
+      - key: INVENTARIO_URL
+        value: "http://localhost:8083/inventario"
+      - key: FINANZAS_URL
+        value: "http://localhost:8084/finanzas"
+
+# 10. Base de Datos PostgreSQL (gratuita en Render)
+databases:
+  - name: gc-db
+    databaseName: grupocordillera
+    user: grupocordillera
+    region: saopaulo
+    plan: free
+    ipAllowList: []  # Permite acceso solo desde Render (seguro)
