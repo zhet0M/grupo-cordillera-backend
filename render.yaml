@@ -1,13 +1,13 @@
 # render.yaml: Blueprint para Render (usa tus Dockerfiles individuales)
-# Ubicación: raíz del repositorio
+# Ubicación: raíz del repositorio (y el repositorio solo contiene el backend, sin la carpeta grupo-cordillera-backend/)
 
 services:
   # 1. API Gateway (punto de entrada principal)
   - type: web
     name: gc-api-gateway
     env: docker
-    dockerfilePath: ./grupo-cordillera-backend/api-gateway/Dockerfile
-    dockerContext: ./grupo-cordillera-backend/api-gateway
+    dockerfilePath: ./api-gateway/Dockerfile
+    dockerContext: ./api-gateway
     region: virginia
     plan: free
     envVars:
@@ -60,8 +60,8 @@ services:
   - type: web
     name: gc-authentication
     env: docker
-    dockerfilePath: ./grupo-cordillera-backend/authentication/Dockerfile
-    dockerContext: ./grupo-cordillera-backend/authentication
+    dockerfilePath: ./authentication/Dockerfile
+    dockerContext: ./authentication
     region: virginia
     plan: free
     envVars:
@@ -84,8 +84,8 @@ services:
   - type: web
     name: gc-ventas
     env: docker
-    dockerfilePath: ./grupo-cordillera-backend/ventas/Dockerfile
-    dockerContext: ./grupo-cordillera-backend/ventas
+    dockerfilePath: ./ventas/Dockerfile
+    dockerContext: ./ventas
     region: virginia
     plan: free
     envVars:
@@ -112,8 +112,8 @@ services:
   - type: web
     name: gc-inventario
     env: docker
-    dockerfilePath: ./grupo-cordillera-backend/inventario/Dockerfile
-    dockerContext: ./grupo-cordillera-backend/inventario
+    dockerfilePath: ./inventario/Dockerfile
+    dockerContext: ./inventario
     region: virginia
     plan: free
     envVars:
@@ -134,8 +134,8 @@ services:
   - type: web
     name: gc-finanzas
     env: docker
-    dockerfilePath: ./grupo-cordillera-backend/finanzas/Dockerfile
-    dockerContext: ./grupo-cordillera-backend/finanzas
+    dockerfilePath: ./finanzas/Dockerfile
+    dockerContext: ./finanzas
     region: virginia
     plan: free
     envVars:
@@ -159,8 +159,8 @@ services:
   - type: web
     name: gc-clientes
     env: docker
-    dockerfilePath: ./grupo-cordillera-backend/clientes/Dockerfile
-    dockerContext: ./grupo-cordillera-backend/clientes
+    dockerfilePath: ./clientes/Dockerfile
+    dockerContext: ./clientes
     region: virginia
     plan: free
     envVars:
@@ -181,8 +181,8 @@ services:
   - type: web
     name: gc-kpis
     env: docker
-    dockerfilePath: ./grupo-cordillera-backend/kpis/Dockerfile
-    dockerContext: ./grupo-cordillera-backend/kpis
+    dockerfilePath: ./kpis/Dockerfile
+    dockerContext: ./kpis
     region: virginia
     plan: free
     envVars:
@@ -200,8 +200,8 @@ services:
   - type: web
     name: gc-alertas
     env: docker
-    dockerfilePath: ./grupo-cordillera-backend/alertas/Dockerfile
-    dockerContext: ./grupo-cordillera-backend/alertas
+    dockerfilePath: ./alertas/Dockerfile
+    dockerContext: ./alertas
     region: virginia
     plan: free
     envVars:
@@ -229,8 +229,8 @@ services:
   - type: web
     name: gc-reportes
     env: docker
-    dockerfilePath: ./grupo-cordillera-backend/reportes/Dockerfile
-    dockerContext: ./grupo-cordillera-backend/reportes
+    dockerfilePath: ./reportes/Dockerfile
+    dockerContext: ./reportes
     region: virginia
     plan: free
     envVars:
