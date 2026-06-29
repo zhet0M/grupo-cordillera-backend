@@ -1,17 +1,17 @@
 
 # 🏔️ Plataforma de Monitoreo Ejecutivo - Backend
 
-<div align="center">
-  <p>
-    <strong>Backend empresarial basado en microservicios para la gestión integral de Grupo Cordillera.</strong>
-  </p>
-  <p>
-    <a href="#-tecnologías"><img alt="Java 17" src="https://img.shields.io/badge/Java-17-007396?style=flat-square&logo=oracle"></a>
-    <a href="#-tecnologías"><img alt="Spring Boot 4.0.6" src="https://img.shields.io/badge/Spring%20Boot-4.0.6-6DB33F?style=flat-square&logo=spring"></a>
-    <a href="#-tecnologías"><img alt="PostgreSQL 15" src="https://img.shields.io/badge/PostgreSQL-15-4169E1?style=flat-square&logo=postgresql"></a>
-    <a href="#-tecnologías"><img alt="Docker" src="https://img.shields.io/badge/Docker-%20-2496ED?style=flat-square&logo=docker"></a>
-  </p>
-</div>
+&lt;div align="center"&gt;
+  &lt;p&gt;
+    &lt;strong&gt;Backend empresarial basado en microservicios para la gestión integral de Grupo Cordillera.&lt;/strong&gt;
+  &lt;/p&gt;
+  &lt;p&gt;
+    &lt;img alt="Java 17" src="https://img.shields.io/badge/Java-17-007396?style=for-the-badge&amp;logo=oracle"&gt;
+    &lt;img alt="Spring Boot 4.0.6" src="https://img.shields.io/badge/Spring_Boot-4.0.6-6DB33F?style=for-the-badge&amp;logo=spring"&gt;
+    &lt;img alt="PostgreSQL 15" src="https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&amp;logo=postgresql"&gt;
+    &lt;img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&amp;logo=docker&amp;logoColor=white"&gt;
+  &lt;/p&gt;
+&lt;/div&gt;
 
 ---
 
@@ -28,7 +28,7 @@ El **Backend Grupo Cordillera** es un sistema de gestión empresarial diseñado 
 - Cálculo de KPIs
 - Generación de reportes
 
-Este proyecto se integra perfectamente con el [Frontend Grupo Cordillera](../Frontend-GrupoCordillera-Angular) para ofrecer una experiencia de usuario completa.
+Este proyecto se integra perfectamente con el **Frontend Grupo Cordillera** para ofrecer una experiencia de usuario completa.
 
 ---
 
@@ -44,7 +44,7 @@ Este proyecto se integra perfectamente con el [Frontend Grupo Cordillera](../Fro
 | 🛒 **Módulo de Ventas** | Procesamiento de ventas por canal y sincronización |
 | 🚨 **Alertas Operativas** | Detección y seguimiento de eventos críticos |
 | 📊 **KPIs y Reportes** | Cálculo de métricas y generación de reportes PDF |
-| 🐳 **Contenedorización** | Despliegue completo con Docker y Docker Compose |
+| 🐳 **Contenerización** | Despliegue completo con Docker y Docker Compose |
 | 📚 **Documentación** | Swagger UI automático para todos los endpoints |
 
 ---
@@ -276,4 +276,10 @@ grupo-cordillera-backend/
 
 ## 👥 Equipo
 
-Proyecto desarrollado por **Matías Medina**.
+Proyecto desarrollado por el **Equipo Grupo Cordillera**.
+
+---
+
+## 📄 Licencia
+
+Este proyecto es propiedad exclusiva del Grupo Cordillera.
