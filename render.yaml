@@ -11,7 +11,6 @@ services:
     region: virginia
     plan: free
     healthCheckPath: /actuator/health
-    startCommand: "java -jar app.jar"
     envVars:
       # Variables para conectar a los microservicios (usando URLs internas de Render)
       - key: AUTH_SERVICE_URL
@@ -43,7 +42,6 @@ services:
     region: virginia
     plan: free
     healthCheckPath: /actuator/health
-    startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
         fromDatabase:
@@ -77,7 +75,6 @@ services:
     region: virginia
     plan: free
     healthCheckPath: /actuator/health
-    startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
         fromDatabase:
@@ -113,7 +110,6 @@ services:
     region: virginia
     plan: free
     healthCheckPath: /actuator/health
-    startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
         fromDatabase:
@@ -145,7 +141,6 @@ services:
     region: virginia
     plan: free
     healthCheckPath: /actuator/health
-    startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
         fromDatabase:
@@ -179,7 +174,6 @@ services:
     region: virginia
     plan: free
     healthCheckPath: /actuator/health
-    startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
         fromDatabase:
@@ -211,7 +205,6 @@ services:
     region: virginia
     plan: free
     healthCheckPath: /actuator/health
-    startCommand: "java -jar app.jar"
     envVars:
       - key: VENTAS_URL
         value: "http://gc-ventas:10000/ventas"
@@ -231,7 +224,6 @@ services:
     region: virginia
     plan: free
     healthCheckPath: /actuator/health
-    startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
         fromDatabase:
@@ -269,7 +261,6 @@ services:
     region: virginia
     plan: free
     healthCheckPath: /actuator/health
-    startCommand: "java -jar app.jar"
     envVars:
       - key: VENTAS_URL
         value: "http://gc-ventas:10000/ventas"
