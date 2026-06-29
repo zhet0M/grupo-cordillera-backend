@@ -1,17 +1,17 @@
 
 # 🏔️ Plataforma de Monitoreo Ejecutivo - Backend
 
-&lt;div align="center"&gt;
-  &lt;p&gt;
-    &lt;strong&gt;Backend empresarial basado en microservicios para la gestión integral de Grupo Cordillera.&lt;/strong&gt;
-  &lt;/p&gt;
-  &lt;p&gt;
-    &lt;img alt="Java 17" src="https://img.shields.io/badge/Java-17-007396?style=for-the-badge&amp;logo=oracle"&gt;
-    &lt;img alt="Spring Boot 4.0.6" src="https://img.shields.io/badge/Spring_Boot-4.0.6-6DB33F?style=for-the-badge&amp;logo=spring"&gt;
-    &lt;img alt="PostgreSQL 15" src="https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&amp;logo=postgresql"&gt;
-    &lt;img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&amp;logo=docker&amp;logoColor=white"&gt;
-  &lt;/p&gt;
-&lt;/div&gt;
+<div align="center">
+  <p>
+    <strong>Backend empresarial basado en microservicios para la gestión integral de Grupo Cordillera.</strong>
+  </p>
+  <p>
+    <img alt="Java 17" src="https://img.shields.io/badge/Java-17-007396?style=for-the-badge&logo=oracle">
+    <img alt="Spring Boot 4.0.6" src="https://img.shields.io/badge/Spring_Boot-4.0.6-6DB33F?style=for-the-badge&logo=spring">
+    <img alt="PostgreSQL 15" src="https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&logo=postgresql">
+    <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
+  </p>
+</div>
 
 ---
 
