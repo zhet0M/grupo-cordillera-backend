@@ -43,7 +43,6 @@ services:
     region: virginia
     plan: free
     healthCheckPath: /actuator/health
-    healthCheckPath: /actuator/health
     startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
