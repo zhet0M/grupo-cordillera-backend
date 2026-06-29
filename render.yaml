@@ -77,7 +77,6 @@ services:
     region: virginia
     plan: free
     healthCheckPath: /actuator/health
-    healthCheckPath: /actuator/health
     startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
@@ -114,7 +113,6 @@ services:
     region: virginia
     plan: free
     healthCheckPath: /actuator/health
-    healthCheckPath: /actuator/health
     startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
@@ -146,7 +144,6 @@ services:
     dockerContext: ./finanzas
     region: virginia
     plan: free
-    healthCheckPath: /actuator/health
     healthCheckPath: /actuator/health
     startCommand: "java -jar app.jar"
     envVars:
@@ -182,7 +179,6 @@ services:
     region: virginia
     plan: free
     healthCheckPath: /actuator/health
-    healthCheckPath: /actuator/health
     startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
@@ -215,7 +211,6 @@ services:
     region: virginia
     plan: free
     healthCheckPath: /actuator/health
-    healthCheckPath: /actuator/health
     startCommand: "java -jar app.jar"
     envVars:
       - key: VENTAS_URL
@@ -235,7 +230,6 @@ services:
     dockerContext: ./alertas
     region: virginia
     plan: free
-    healthCheckPath: /actuator/health
     healthCheckPath: /actuator/health
     startCommand: "java -jar app.jar"
     envVars:
@@ -274,7 +268,6 @@ services:
     dockerContext: ./reportes
     region: virginia
     plan: free
-    healthCheckPath: /actuator/health
     healthCheckPath: /actuator/health
     startCommand: "java -jar app.jar"
     envVars:
