@@ -10,6 +10,8 @@ services:
     dockerContext: ./api-gateway
     region: virginia
     plan: free
+    healthCheckPath: /actuator/health
+    startCommand: "java -jar app.jar"
     envVars:
       # Variables para conectar a los microservicios (usando URLs internas de Render)
       - key: AUTH_SERVICE_URL
@@ -40,6 +42,9 @@ services:
     dockerContext: ./authentication
     region: virginia
     plan: free
+    healthCheckPath: /actuator/health
+    healthCheckPath: /actuator/health
+    startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
         fromDatabase:
@@ -72,6 +77,9 @@ services:
     dockerContext: ./ventas
     region: virginia
     plan: free
+    healthCheckPath: /actuator/health
+    healthCheckPath: /actuator/health
+    startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
         fromDatabase:
@@ -106,6 +114,9 @@ services:
     dockerContext: ./inventario
     region: virginia
     plan: free
+    healthCheckPath: /actuator/health
+    healthCheckPath: /actuator/health
+    startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
         fromDatabase:
@@ -136,6 +147,9 @@ services:
     dockerContext: ./finanzas
     region: virginia
     plan: free
+    healthCheckPath: /actuator/health
+    healthCheckPath: /actuator/health
+    startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
         fromDatabase:
@@ -168,6 +182,9 @@ services:
     dockerContext: ./clientes
     region: virginia
     plan: free
+    healthCheckPath: /actuator/health
+    healthCheckPath: /actuator/health
+    startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
         fromDatabase:
@@ -198,6 +215,9 @@ services:
     dockerContext: ./kpis
     region: virginia
     plan: free
+    healthCheckPath: /actuator/health
+    healthCheckPath: /actuator/health
+    startCommand: "java -jar app.jar"
     envVars:
       - key: VENTAS_URL
         value: "http://gc-ventas:10000/ventas"
@@ -216,6 +236,9 @@ services:
     dockerContext: ./alertas
     region: virginia
     plan: free
+    healthCheckPath: /actuator/health
+    healthCheckPath: /actuator/health
+    startCommand: "java -jar app.jar"
     envVars:
       - key: DB_HOST
         fromDatabase:
@@ -252,6 +275,9 @@ services:
     dockerContext: ./reportes
     region: virginia
     plan: free
+    healthCheckPath: /actuator/health
+    healthCheckPath: /actuator/health
+    startCommand: "java -jar app.jar"
     envVars:
       - key: VENTAS_URL
         value: "http://gc-ventas:10000/ventas"

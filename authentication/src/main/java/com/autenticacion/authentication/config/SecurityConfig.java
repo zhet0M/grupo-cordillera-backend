@@ -34,6 +34,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/auth/login", "/auth/registro").permitAll()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**", "/webjars/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/auth/admin/**").hasAnyAuthority("SUPER_ADMIN", "ADMIN_USUARIOS")
                 .anyRequest().authenticated()
             )
