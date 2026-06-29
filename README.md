@@ -276,10 +276,8 @@ grupo-cordillera-backend/
 
 ## 👥 Equipo
 
-Proyecto desarrollado por el **Equipo Grupo Cordillera**.
+Proyecto desarrollado por **Matías Medina**.
 
 ---
 
-## 📄 Licencia
 
-Este proyecto es propiedad exclusiva del Grupo Cordillera.
