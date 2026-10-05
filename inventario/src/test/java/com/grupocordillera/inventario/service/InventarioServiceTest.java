@@ -2,8 +2,10 @@ package com.grupocordillera.inventario.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -109,5 +111,89 @@ class InventarioServiceTest {
         producto.setStockMinimo(1);
         producto.setSucursal("SUC-CENTRAL");
         return producto;
+    }
+
+    // ==================== Descuento de stock PUT /inventario/descontar/{sku} ====================
+
+    @Test
+    void descontarStockConStockSuficienteActualizaStockYGuarda() {
+        ProductoTecnologia producto = productoTecnologia("TEC-007");
+        producto.setId(7L);
+        producto.setStock(10);
+        producto.setStockMinimo(3);
+        producto.setEstado(Producto.Estado.DISPONIBLE);
+
+        when(productoRepository.findBySku("TEC-007")).thenReturn(java.util.Optional.of(producto));
+
+        com.grupocordillera.inventario.model.Producto resultado = inventarioService.descontarStock("TEC-007", 3);
+
+        assertEquals(7, resultado.getStock());
+        assertEquals(Producto.Estado.DISPONIBLE, resultado.getEstado());
+        verify(productoRepository).save(producto);
+    }
+
+    @Test
+    void descontarStockHastaCeroPoneEstadoAgotado() {
+        ProductoTecnologia producto = productoTecnologia("TEC-008");
+        producto.setId(8L);
+        producto.setStock(2);
+        producto.setStockMinimo(1);
+        producto.setEstado(Producto.Estado.DISPONIBLE);
+
+        when(productoRepository.findBySku("TEC-008")).thenReturn(java.util.Optional.of(producto));
+
+        com.grupocordillera.inventario.model.Producto resultado = inventarioService.descontarStock("TEC-008", 2);
+
+        assertEquals(0, resultado.getStock());
+        assertEquals(Producto.Estado.AGOTADO, resultado.getEstado());
+    }
+
+    @Test
+    void descontarStockInsuficienteLanzaRuntimeException() {
+        ProductoTecnologia producto = productoTecnologia("TEC-009");
+        producto.setStock(1);
+        producto.setStockMinimo(1);
+
+        when(productoRepository.findBySku("TEC-009")).thenReturn(java.util.Optional.of(producto));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> inventarioService.descontarStock("TEC-009", 5));
+
+        assertEquals("Stock insuficiente para el producto: TEC-009", ex.getMessage());
+        // Stock no cambia y no se guarda
+        assertEquals(1, producto.getStock());
+        verify(productoRepository, never()).save(any());
+    }
+
+    @Test
+    void descontarStockConSkuMinusculasNormalizaAMayusculas() {
+        ProductoTecnologia producto = productoTecnologia("TEC-015");
+        producto.setId(15L);
+        producto.setStock(20);
+        producto.setEstado(Producto.Estado.DISPONIBLE);
+
+        when(productoRepository.findBySku("TEC-015")).thenReturn(java.util.Optional.of(producto));
+
+        inventarioService.descontarStock("tec-015", 5);
+
+        assertEquals(15, producto.getStock());
+        verify(productoRepository).findBySku("TEC-015");
+    }
+
+    @Test
+    void registrarProductoConCategoriaInvalidaLanzaErrorAlGenerarSku() {
+        com.grupocordillera.inventario.model.ProductoHogar producto = new com.grupocordillera.inventario.model.ProductoHogar();
+        producto.setCategoria("CATEGORIA_RARA");
+        producto.setNombre("Raro");
+        producto.setPrecio(10.0);
+        producto.setCosto(5.0);
+        producto.setStock(1);
+        producto.setStockMinimo(1);
+        producto.setSucursal("SUC-CENTRAL");
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> inventarioService.registrarProducto(producto));
+
+        assertEquals("Categoria no valida para generar SKU: CATEGORIA_RARA", ex.getMessage());
     }
 }
