@@ -12,16 +12,24 @@ services:
       - sonarqube-db-data:/var/lib/postgresql/data
     networks:
       - cordillera-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sonar -d sonar"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
 
   sonarqube:
     image: sonarqube:lts-community
     container_name: sonarqube
     depends_on:
-      - sonarqube-db
+      sonarqube-db:
+        condition: service_healthy
     environment:
       SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonar
       SONAR_JDBC_USERNAME: sonar
       SONAR_JDBC_PASSWORD: sonar
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
     ports:
       - "9000:9000"
     volumes:
@@ -30,6 +38,7 @@ services:
       - sonarqube-logs:/opt/sonarqube/logs
     networks:
       - cordillera-net
+    restart: unless-stopped
 
 volumes:
   sonarqube-db-data:
