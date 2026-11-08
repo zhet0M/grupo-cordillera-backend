@@ -326,42 +326,16 @@ class JwtAuthFilterTest {
     }
 
     @Test
-    void tokenValidoSinClaimRolDevuelveNullYSeAplicaReglaDefault() throws ServletException, IOException {
-        //HALLAZGO: si el JWT es válido pero no trae claim "rol",
-        // extraerRol() retorna null y tienePermiso() aplica reglas
-        // sin cortocircuito:
-        //  - GET /ventas → isGet=true → return true → PASA (200)
-        //  - POST /ventas → ADMIN_VENTAS.equals(null) false → 403
-        //  - GET /reportes → EJECUTIVO/ANALISTA equals null → 403
-        //  - /auth/admin → false → 403
-        // No hay un "rol default" ni rechazo explícito ante rol null.
-        String token = TOKEN_VALIDO;
-        MockHttpServletRequest reqGet = request("GET", "/ventas", bearer(token));
-        MockHttpServletResponse resGet = response();
-        MockFilterChain chainGet = chain();
+    void tokenValidoSinClaimRolRetorna401() throws ServletException, IOException {
+        configurarTokenValido(EMAIL_TEST, null);
+        MockHttpServletRequest req = request("GET", "/ventas", bearer(TOKEN_VALIDO));
+        MockHttpServletResponse res = response();
+        MockFilterChain chain = chain();
 
-        when(jwtService.validarToken(token)).thenReturn(true);
-        when(jwtService.extraerEmail(token)).thenReturn(EMAIL_TEST);
-        when(jwtService.extraerRol(token)).thenReturn(null);
+        doFilter(req, res, chain);
 
-        doFilter(reqGet, resGet, chainGet);
-
-        assertEquals(200, resGet.getStatus(),
-                "GET /ventas con rol null retorna 200 (isGet=true en el branch /ventas)");
-
-        MockHttpServletRequest reqPost = request("POST", "/ventas", bearer(token));
-        MockHttpServletResponse resPost = response();
-        MockFilterChain chainPost = chain();
-        doFilter(reqPost, resPost, chainPost);
-        assertEquals(403, resPost.getStatus(),
-                "POST /ventas con rol null retorna 403 (no coincide ADMIN_VENTAS)");
-
-        MockHttpServletRequest reqReportes = request("GET", "/reportes", bearer(token));
-        MockHttpServletResponse resReportes = response();
-        MockFilterChain chainReportes = chain();
-        doFilter(reqReportes, resReportes, chainReportes);
-        assertEquals(403, resReportes.getStatus(),
-                "GET /reportes con rol null retorna 403 (no es EJECUTIVO ni ANALISTA)");
+        assertEquals(401, res.getStatus());
+        assertNull(chain.getRequest());
     }
 
     // =====================================================================
@@ -463,17 +437,9 @@ class JwtAuthFilterTest {
     }
 
     @Test
-    void pathDesconocidoRetornaTruePasaSinRestriccion() throws ServletException, IOException {
-        //HALLAZGO: al final de tienePermiso() hay un `return true;` de
-        // cortesía. Cualquier ruta que no coincida con /ventas, /inventario,
-        // /finanzas, /clientes, /kpis, /reportes, /alertas, /auth/admin
-        // PASA AUTOMÁTICAMENTE con cualquier método y cualquier rol (incluso
-        // roles inexistentes). Es una puerta trasera potencial: si alguien
-        // agrega un nuevo endpoint en algún microservicio y se olvida de
-        // declararlo aquí, queda expuesto sin control RBAC.
-        String rutaDesconocida = "/modulo-secreto-no-declarado/operacion";
-        String[] rolesCualquiera = {"EJECUTIVO", "ROL_INEXISTENTE", "INVITADO"};
-        for (String rol : rolesCualquiera) {
+    void pathDesconocidoSeDeniegaPorDefecto() throws ServletException, IOException {
+        String rutaDesconocida = "/modulo-no-declarado/operacion";
+        for (String rol : new String[]{"EJECUTIVO", "ADMIN_VENTAS", "SUPER_ADMIN"}) {
             configurarTokenValido(EMAIL_TEST, rol);
             MockHttpServletRequest req = request("POST", rutaDesconocida, bearer(TOKEN_VALIDO));
             MockHttpServletResponse res = response();
@@ -481,8 +447,8 @@ class JwtAuthFilterTest {
 
             doFilter(req, res, chain);
 
-            assertEquals(200, res.getStatus(),
-                    "HALLAZGO confirmado: POST " + rutaDesconocida + " con rol=" + rol + " PASA");
+            assertEquals(403, res.getStatus());
+            assertNull(chain.getRequest());
         }
     }
 

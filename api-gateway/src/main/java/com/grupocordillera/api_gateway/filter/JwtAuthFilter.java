@@ -1,7 +1,8 @@
 package com.grupocordillera.api_gateway.filter;
 
-import java.io.IOException;     
+import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -9,6 +10,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.grupocordillera.api_gateway.config.JwtService;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,12 +28,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/auth/login",
             "/auth/registro",
             "/swagger-ui.html",
-            "/swagger-ui/",
-            "/swagger-ui",
-            "/v3/api-docs",
-            "/v3/api-docs/",
-            "/webjars/"
+            "/v3/api-docs.yaml"
     );
+
+    private static final List<String> RUTAS_DOCUMENTACION = List.of(
+            "/swagger-ui", "/v3/api-docs", "/webjars");
+
+    private static final Set<String> ROLES_VALIDOS = Set.of(
+            "SUPER_ADMIN", "ADMIN_USUARIOS", "ADMIN_VENTAS", "ADMIN_INVENTARIO",
+            "ADMIN_FINANZAS", "ADMIN_CLIENTES", "EJECUTIVO", "ANALISTA");
+
+    private static final List<String> DOMINIOS_AUTORIZADOS = List.of(
+            "/ventas", "/inventario", "/finanzas", "/clientes", "/kpis",
+            "/reportes", "/alertas", "/auth/admin");
 
     @Override
     protected void doFilterInternal(
@@ -48,7 +57,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         // Si es ruta pública, dejar pasar
-        if (RUTAS_PUBLICAS.stream().anyMatch(path::startsWith)) {
+        if (RUTAS_PUBLICAS.contains(path)
+                || RUTAS_DOCUMENTACION.stream().anyMatch(ruta -> perteneceADominio(path, ruta))) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -66,15 +76,27 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         // Extrae y valida el token
         String token = authHeader.substring(7);
 
-        if (!jwtService.validarToken(token)) {
+        String email;
+        String rol;
+        try {
+            if (!jwtService.validarToken(token)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token inválido o expirado");
+                return;
+            }
+            email = jwtService.extraerEmail(token);
+            rol = jwtService.extraerRol(token);
+        } catch (JwtException | IllegalArgumentException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Token inválido o expirado");
             return;
         }
 
-        // Token válido, agrega info del usuario al header
-        String email = jwtService.extraerEmail(token);
-        String rol = jwtService.extraerRol(token);
+        if (email == null || email.isBlank() || rol == null || !ROLES_VALIDOS.contains(rol)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token inválido o expirado");
+            return;
+        }
 
         if (!tienePermiso(path, method, rol)) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -89,44 +111,52 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private boolean tienePermiso(String path, String method, String rol) {
+        if (DOMINIOS_AUTORIZADOS.stream().noneMatch(dominio -> perteneceADominio(path, dominio))) {
+            return false;
+        }
+
         if ("SUPER_ADMIN".equals(rol)) {
             return true;
         }
 
         boolean isGet = "GET".equalsIgnoreCase(method);
 
-        if (path.startsWith("/ventas")) {
+        if (perteneceADominio(path, "/ventas")) {
             if (isGet) return true;
             return "ADMIN_VENTAS".equals(rol);
         }
-        if (path.startsWith("/inventario")) {
+        if (perteneceADominio(path, "/inventario")) {
             if (isGet) return true;
             return "ADMIN_INVENTARIO".equals(rol);
         }
-        if (path.startsWith("/finanzas")) {
+        if (perteneceADominio(path, "/finanzas")) {
             if (isGet) return true;
             return "ADMIN_FINANZAS".equals(rol);
         }
-        if (path.startsWith("/clientes")) {
+        if (perteneceADominio(path, "/clientes")) {
             if (isGet) return true;
             return "ADMIN_CLIENTES".equals(rol);
         }
-        if (path.startsWith("/kpis")) {
+        if (perteneceADominio(path, "/kpis")) {
             if (isGet) return true;
             return false;
         }
-        if (path.startsWith("/reportes")) {
+        if (perteneceADominio(path, "/reportes")) {
             return "EJECUTIVO".equals(rol) || "ANALISTA".equals(rol);
         }
-        if (path.startsWith("/alertas")) {
+        if (perteneceADominio(path, "/alertas")) {
             if (isGet) return true;
             return "EJECUTIVO".equals(rol) || "ANALISTA".equals(rol);
         }
         
-        if (path.startsWith("/auth/admin")) {
+        if (perteneceADominio(path, "/auth/admin")) {
             return "ADMIN_USUARIOS".equals(rol) || "SUPER_ADMIN".equals(rol);
         }
 
-        return true;
+        return false;
+    }
+
+    private boolean perteneceADominio(String path, String dominio) {
+        return path.equals(dominio) || path.startsWith(dominio + "/");
     }
 }

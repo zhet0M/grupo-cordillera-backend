@@ -1,7 +1,9 @@
 package com.autenticacion.authentication.service;
 
 import java.security.Key;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import jakarta.annotation.PostConstruct;
 
 import org.springframework.stereotype.Service;
 
@@ -17,8 +19,13 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private long expiration;
 
+    @PostConstruct
+    public void validarConfiguracion() {
+        getKey();
+    }
+
     private Key getKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generarToken(String email, String rol){

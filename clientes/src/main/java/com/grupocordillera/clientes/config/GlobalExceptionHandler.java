@@ -1,5 +1,6 @@
 package com.grupocordillera.clientes.config;
 
+import com.grupocordillera.clientes.exception.ClienteNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,9 +14,14 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(ClienteNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFound(ClienteNotFoundException ex) {
+        return buildBody(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntime(RuntimeException ex) {
-        return buildBody(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        return buildBody(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno al procesar la solicitud");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

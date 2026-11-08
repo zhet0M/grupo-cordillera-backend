@@ -9,6 +9,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import com.grupocordillera.api_gateway.filter.JwtAuthFilter;
+import com.grupocordillera.api_gateway.filter.SecurityHeadersFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,6 +18,15 @@ import lombok.RequiredArgsConstructor;
 public class GatewayConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+
+    @Bean
+    public FilterRegistrationBean<SecurityHeadersFilter> securityHeadersFilter() {
+        FilterRegistrationBean<SecurityHeadersFilter> bean = new FilterRegistrationBean<>();
+        bean.setFilter(new SecurityHeadersFilter());
+        bean.addUrlPatterns("/*");
+        bean.setOrder(0);
+        return bean;
+    }
 
     // Registrar el filtro JWT
     @Bean

@@ -7,7 +7,7 @@
   </p>
   <p>
     <img alt="Java 17" src="https://img.shields.io/badge/Java-17-007396?style=for-the-badge&logo=oracle">
-    <img alt="Spring Boot 4.0.6" src="https://img.shields.io/badge/Spring_Boot-4.0.6-6DB33F?style=for-the-badge&logo=spring">
+    <img alt="Spring Boot 4.0.9" src="https://img.shields.io/badge/Spring_Boot-4.0.9-6DB33F?style=for-the-badge&logo=spring">
     <img alt="PostgreSQL 15" src="https://img.shields.io/badge/PostgreSQL-15-4169E1?style=for-the-badge&logo=postgresql">
     <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
   </p>
@@ -53,13 +53,13 @@ Este proyecto se integra perfectamente con el **Frontend Grupo Cordillera** para
 
 ### Lenguajes y Frameworks
 - **Java 17** ☕
-- **Spring Boot 4.0.6** 🌱
-- **Spring Cloud Gateway 2025.1.1** ☁️
+- **Spring Boot 4.0.9** 🌱
+- **Spring Cloud Gateway 2025.1.4** ☁️
 - **Spring Cloud OpenFeign** 📡
 - **Spring Data JPA** 🗃️
 - **Spring Security + JJWT** 🔐
 - **Lombok** 🔧
-- **SpringDoc OpenAPI 2.8.8** 📄
+- **SpringDoc OpenAPI 3.0.3** 📄
 
 ### Bases de Datos
 - **PostgreSQL 15** 🐘
@@ -122,10 +122,10 @@ Antes de comenzar, asegúrate de tener instalados:
 
 ### 1. Levantar Todo con Docker Compose (Recomendado)
 
-Este comando levanta **todos los microservicios, bases de datos, SonarQube y Metabase** de una sola vez:
+El Compose principal está dentro de `api-gateway`. Antes de iniciarlo, configura `JWT_SECRET` y, si corresponde, la inicialización administrativa según [la guía del Encargo 3](docs/encargo3/GUIA_DE_EJECUCION.md). Para las pruebas del encargo se utiliza el laboratorio separado `docker-compose.qa.yml`.
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.sonarqube.yml -f docker-compose.metabase.yml up -d
+docker compose -f api-gateway/docker-compose.yml up -d
 ```
 
 ---
@@ -165,10 +165,10 @@ Una vez que los servicios estén corriendo, puedes acceder a la documentación i
 
 ### Ejecutar Pruebas Unitarias
 
-Para ejecutar las pruebas de todos los microservicios:
+Para ejecutar las pruebas de todos los microservicios desde la raíz (PowerShell 7):
 
-```bash
-mvn clean test
+```powershell
+.\scripts\Invoke-BackendBaseline.ps1 -Goal verify
 ```
 
 Para ejecutar pruebas de un microservicio específico:
@@ -235,13 +235,15 @@ Las credenciales por defecto son:
 
 ### 1. Iniciar Sesión (Obtener Token JWT)
 
+Usa la cuenta configurada para tu ambiente. No existe una contraseña administrativa fija de inicialización.
+
 ```bash
 POST http://localhost:8080/auth/login
 Content-Type: application/json
 
 {
-  "email": "admin@grupocordillera.com",
-  "password": "admin123"
+  "email": "<correo_administrativo_configurado>",
+  "password": "<contraseña_configurada>"
 }
 ```
 
