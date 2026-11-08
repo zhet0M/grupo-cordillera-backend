@@ -26,6 +26,11 @@ services:
     ports:
       - "8081:8081"
     environment:
+      JWT_SECRET: ${JWT_SECRET:?Configura JWT_SECRET con una clave aleatoria compartida}
+      BOOTSTRAP_ADMIN_ENABLED: ${BOOTSTRAP_ADMIN_ENABLED:-false}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
       SPRING_DATASOURCE_URL: jdbc:postgresql://db-auth:5432/bd_auth
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 1234

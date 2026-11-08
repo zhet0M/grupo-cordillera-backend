@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.nio.charset.StandardCharsets;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class JwtService {
@@ -13,8 +15,13 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secret;
 
+    @PostConstruct
+    public void validarConfiguracion() {
+        getKey();
+    }
+
     private Key getKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes());
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     public boolean validarToken(String token) {

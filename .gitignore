@@ -38,3 +38,10 @@ build/
 ### Others ###
 *.log
 *.class
+
+# Resultados locales del Encargo 3; revisar y anonimizar antes de compartir.
+/evidence/
+.env
+.env.local
+.env.qa
+__pycache__/

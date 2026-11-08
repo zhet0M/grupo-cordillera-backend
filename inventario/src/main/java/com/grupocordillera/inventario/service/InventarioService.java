@@ -51,6 +51,9 @@ public class InventarioService {
 
     // Método principal para cuando ocurre una venta
     public Producto descontarStock(String sku, int cantidad) {
+        if (cantidad <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor que cero");
+        }
         Producto producto = obtenerPorSku(sku);
         if (producto.getStock() < cantidad) {
             throw new RuntimeException("Stock insuficiente para el producto: " + sku);

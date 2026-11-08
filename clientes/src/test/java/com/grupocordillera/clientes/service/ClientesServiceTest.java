@@ -180,17 +180,15 @@ class ClientesServiceTest {
         assertEquals(Cliente.Estado.INACTIVO, resultado.get(0).getEstado());
     }
 
-    // ==================== Obtener por id con HALLAZGO ====================
+    // ==================== Obtener por id y contrato de recurso inexistente ====================
 
     @Test
     void obtenerPorIdLanzaErrorSiNoExiste() {
-        // HALLAZGO: El service lanza RuntimeException genérica. GlobalExceptionHandler
-        // no mapea RuntimeException a 404 (lo convierte en 500). El requisito pide
-        // 404 para id inexistente, pero el comportamiento ACTUAL retorna 500.
-        // Documentamos el comportamiento REAL y no lo corregimos.
+        // INC-06: la excepción específica se traduce a HTTP 404 en el controlador.
         when(clienteRepository.findById(eq(99L))).thenReturn(Optional.empty());
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> clientesService.obtenerPorId(99L));
+        RuntimeException ex = assertThrows(com.grupocordillera.clientes.exception.ClienteNotFoundException.class,
+                () -> clientesService.obtenerPorId(99L));
 
         assertEquals("Cliente no encontrado con id: 99", ex.getMessage());
     }

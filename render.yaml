@@ -54,7 +54,7 @@ services:
           property: host
       # JWT Secret (mismo que tus microservicios)
       - key: JWT_SECRET
-        value: clave-secreta-grupo-cordillera-2025-muy-larga
+        sync: false
 
   # 2. Authentication Microservice
   - type: web
@@ -86,7 +86,7 @@ services:
           name: gc-db
           property: password
       - key: JWT_SECRET
-        value: clave-secreta-grupo-cordillera-2025-muy-larga
+        sync: false
 
   # 3. Ventas Microservice
   - type: web

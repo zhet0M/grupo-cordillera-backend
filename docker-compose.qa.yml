@@ -1,0 +1,119 @@
+name: cordillera-encargo3-qa
+
+x-app: &app
+  networks: [qa]
+  environment: &common-env
+    JAVA_TOOL_OPTIONS: -Xmx256m
+    TZ: America/Santiago
+    SPRING_JPA_SHOW_SQL: "false"
+
+x-db-env: &db-env
+  <<: *common-env
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  SPRING_DATASOURCE_USERNAME: qa
+  SPRING_DATASOURCE_PASSWORD: ${QA_DB_PASSWORD:?Ejecuta scripts/prepare_qa.py}
+
+services:
+  postgres:
+    image: postgres:15
+    networks: [qa]
+    environment:
+      POSTGRES_USER: qa
+      POSTGRES_PASSWORD: ${QA_DB_PASSWORD:?Ejecuta scripts/prepare_qa.py}
+      POSTGRES_DB: postgres
+    volumes:
+      - qa-data:/var/lib/postgresql/data
+      - ./qa/init-databases.sql:/docker-entrypoint-initdb.d/01-databases.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U qa -d postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  authentication:
+    <<: *app
+    build: {context: ., dockerfile: Dockerfile.qa, args: {MODULE: authentication}}
+    environment:
+      <<: *db-env
+      DB_NAME: bd_auth
+      JWT_SECRET: ${JWT_SECRET:?Configura la clave compartida}
+      BOOTSTRAP_ADMIN_ENABLED: ${BOOTSTRAP_ADMIN_ENABLED:-false}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+    depends_on: {postgres: {condition: service_healthy}}
+
+  clientes:
+    <<: *app
+    build: {context: ., dockerfile: Dockerfile.qa, args: {MODULE: clientes}}
+    environment: {<<: *db-env, DB_NAME: bd_clientes}
+    depends_on: {postgres: {condition: service_healthy}}
+
+  inventario:
+    <<: *app
+    build: {context: ., dockerfile: Dockerfile.qa, args: {MODULE: inventario}}
+    environment: {<<: *db-env, DB_NAME: bd_inventario}
+    depends_on: {postgres: {condition: service_healthy}}
+
+  ventas:
+    <<: *app
+    build: {context: ., dockerfile: Dockerfile.qa, args: {MODULE: ventas}}
+    environment:
+      <<: *db-env
+      DB_NAME: bd_ventas
+    depends_on: {postgres: {condition: service_healthy}}
+
+  finanzas:
+    <<: *app
+    build: {context: ., dockerfile: Dockerfile.qa, args: {MODULE: finanzas}}
+    environment: {<<: *db-env, DB_NAME: bd_finanzas}
+    depends_on: {postgres: {condition: service_healthy}}
+
+  ms-alertas:
+    <<: *app
+    build: {context: ., dockerfile: Dockerfile.qa, args: {MODULE: alertas}}
+    environment:
+      <<: *db-env
+      DB_NAME: bd_alertas
+      INVENTARIO_URL: http://inventario:8083/inventario
+      VENTAS_URL: http://ventas:8082/ventas
+      FINANZAS_URL: http://finanzas:8084/finanzas
+    depends_on: {postgres: {condition: service_healthy}}
+
+  ms-kpis:
+    <<: *app
+    build: {context: ., dockerfile: Dockerfile.qa, args: {MODULE: kpis}}
+    environment:
+      <<: *common-env
+      INVENTARIO_URL: http://inventario:8083/inventario
+      VENTAS_URL: http://ventas:8082/ventas
+      FINANZAS_URL: http://finanzas:8084/finanzas
+      CLIENTES_URL: http://clientes:8085/clientes
+
+  ms-reportes:
+    <<: *app
+    build: {context: ., dockerfile: Dockerfile.qa, args: {MODULE: reportes}}
+    environment:
+      <<: *common-env
+      INVENTARIO_URL: http://inventario:8083/inventario
+      VENTAS_URL: http://ventas:8082/ventas
+      FINANZAS_URL: http://finanzas:8084/finanzas
+
+  api-gateway:
+    <<: *app
+    networks: [qa, entry]
+    build: {context: ., dockerfile: Dockerfile.qa, args: {MODULE: api-gateway}}
+    environment:
+      <<: *common-env
+      JWT_SECRET: ${JWT_SECRET:?Configura la clave compartida}
+      KPIS_SERVICE_URL: http://ms-kpis:8086
+    ports: ["127.0.0.1:18080:8080"]
+
+networks:
+  qa:
+    internal: true
+  entry:
+    driver: bridge
+volumes:
+  qa-data:

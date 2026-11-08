@@ -30,6 +30,9 @@ public class VentasService {
     private final FinanzasSyncService finanzasSyncService;
 
     public Venta registrarVenta(Venta venta) {
+        if (venta.getCantidad() == null || venta.getCantidad() <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor que cero");
+        }
         validarCanal(venta);
         Sucursal sucursalVenta = Sucursal.from(venta.getSucursal());
         venta.setSucursal(sucursalVenta.valor());

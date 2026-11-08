@@ -11,11 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.grupocordillera.alertas.client.InventarioClient;
 import com.grupocordillera.alertas.dto.AlertaResponse;
 import com.grupocordillera.alertas.dto.AlertasResumenResponse;
 import com.grupocordillera.alertas.dto.CrearAlertaRequest;
-import com.grupocordillera.alertas.dto.ProductoInventarioFuenteDTO;
 import com.grupocordillera.alertas.service.AlertaService;
 import com.grupocordillera.alertas.service.DeteccionAlertasService;
 
@@ -31,7 +29,6 @@ public class AlertaController {
 
     private final AlertaService alertaService;
     private final DeteccionAlertasService deteccionAlertasService;
-    private final InventarioClient inventarioClient;
 
     @PostMapping
     public ResponseEntity<AlertaResponse> crear(@Valid @RequestBody CrearAlertaRequest request) {
@@ -74,27 +71,4 @@ public class AlertaController {
         return ResponseEntity.ok("Deteccion ejecutada");
     }
 
-    @GetMapping("/test-inventario")
-    public ResponseEntity<String> testInventario() {
-        ResponseEntity<String> rawResponse = inventarioClient.obtenerProductosRaw();
-        System.out.println("Test Inventario - Respuesta RAW:");
-        System.out.println(rawResponse.getBody());
-        
-        try {
-            List<ProductoInventarioFuenteDTO> productos = inventarioClient.obtenerProductos();
-            System.out.println("\nTest Inventario - Productos deserializados:");
-            for (ProductoInventarioFuenteDTO p : productos) {
-                System.out.println("  SKU: " + p.getSku() + 
-                    ", Stock: " + p.getStock() + 
-                    ", StockMin: " + p.getStockMinimo() + 
-                    ", Estado: " + p.getEstado());
-            }
-            System.out.println("Total de productos deserializados: " + productos.size());
-        } catch (Exception e) {
-            System.err.println("Error al deserializar productos:");
-            e.printStackTrace();
-        }
-        
-        return rawResponse;
-    }
 }

@@ -25,8 +25,10 @@ import com.grupocordillera.alertas.model.Alerta;
 import com.grupocordillera.alertas.repository.AlertaRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class DeteccionAlertasService {
 
@@ -53,14 +55,11 @@ public class DeteccionAlertasService {
 
     private void detectarStockCritico() {
         try {
-            System.out.println("Iniciando detección de stock crítico...");
             
             // Obtener respuesta raw y parsearla manualmente para evitar problemas de polimorfismo
             ResponseEntity<String> rawResponse = inventarioClient.obtenerProductosRaw();
             String json = rawResponse.getBody();
-            
-            System.out.println("Respuesta RAW obtenida: " + (json != null ? json.length() + " caracteres" : "null"));
-            
+
             // Configurar ObjectMapper para ignorar información de tipo
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -68,27 +67,17 @@ public class DeteccionAlertasService {
             
             List<ProductoInventarioFuenteDTO> productos = objectMapper.readValue(json, 
                 new TypeReference<List<ProductoInventarioFuenteDTO>>() {});
-            
-            System.out.println("Obtenidos " + productos.size() + " productos del servicio de inventario");
-            
+
             for (ProductoInventarioFuenteDTO producto : productos) {
-                System.out.println("Revisando producto: SKU=" + producto.getSku() + 
-                    ", Nombre=" + producto.getNombre() + 
-                    ", Stock=" + producto.getStock() + 
-                    ", StockMinimo=" + producto.getStockMinimo() + 
-                    ", Estado=" + producto.getEstado());
                 
                 if (producto.getSku() == null || producto.getNombre() == null) {
-                    System.out.println("  Saltando producto (sin SKU o nombre)");
                     continue;
                 }
                 
                 boolean critico = producto.getStock() != null && producto.getStockMinimo() != null
                         && producto.getStock() <= producto.getStockMinimo()
                         && (producto.getEstado() == null || !"DESCONTINUADO".equalsIgnoreCase(producto.getEstado()));
-                
-                System.out.println("  Stock crítico? " + critico);
-                
+
                 registrarSiCorresponde(
                         "STOCK_CRITICO:" + producto.getSku(),
                         Alerta.TipoAlerta.STOCK_CRITICO,
@@ -98,8 +87,7 @@ public class DeteccionAlertasService {
                 );
             }
         } catch (Exception e) {
-            System.err.println("Error al detectar stock crítico: " + e.getMessage());
-            e.printStackTrace();
+            log.warn("No se pudo completar detección de stock crítico; tipo={}", e.getClass().getSimpleName());
         }
     }
 
@@ -131,7 +119,7 @@ public class DeteccionAlertasService {
                 );
             }
         } catch (Exception e) {
-            System.err.println("Error al detectar ventas bajas: " + e.getMessage());
+            log.warn("No se pudo completar detección de ventas bajas; tipo={}", e.getClass().getSimpleName());
         }
     }
 
@@ -157,7 +145,7 @@ public class DeteccionAlertasService {
                     normalizado
             );
         } catch (Exception e) {
-            System.err.println("Error al detectar margen normalizado: " + e.getMessage());
+            log.warn("No se pudo completar detección de margen normalizado; tipo={}", e.getClass().getSimpleName());
         }
     }
 
@@ -194,14 +182,11 @@ public class DeteccionAlertasService {
     }
 
     private void registrarSiCorresponde(String codigo, Alerta.TipoAlerta tipo, String titulo, String detalle, boolean disparar) {
-        System.out.println("registrarSiCorresponde - Codigo: " + codigo + ", Disparar: " + disparar);
         if (!disparar) {
-            System.out.println("  No se dispara alerta");
             return;
         }
 
         alertaRepository.findByCodigo(codigo).ifPresentOrElse(alerta -> {
-            System.out.println("  Actualizando alerta existente: " + codigo);
             alerta.setTipo(tipo);
             alerta.setTitulo(titulo);
             alerta.setDetalle(detalle);
@@ -209,9 +194,7 @@ public class DeteccionAlertasService {
             alerta.setLeida(false);
             alerta.setFechaLectura(null);
             alertaRepository.save(alerta);
-            System.out.println("  Alerta actualizada y marcada como no leída!");
         }, () -> {
-            System.out.println("  Creando nueva alerta: " + codigo);
             Alerta alerta = new Alerta();
             alerta.setCodigo(codigo);
             alerta.setTipo(tipo);
@@ -220,7 +203,6 @@ public class DeteccionAlertasService {
             alerta.setLeida(false);
             alerta.setFechaCreacion(java.time.LocalDateTime.now());
             alertaRepository.save(alerta);
-            System.out.println("  Alerta guardada exitosamente!");
         });
     }
 }

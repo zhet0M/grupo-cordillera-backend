@@ -1,0 +1,17 @@
+name: cordillera-encargo3-security
+services:
+  sonarqube:
+    image: sonarqube@sha256:f709975ab31d2d08f5a3ae2dc73a31ee011afc8cf28845082c17c55d45df9df5
+    environment:
+      # Solo laboratorio de análisis local, con la base H2 integrada.
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    ports:
+      - "127.0.0.1:9001:9000"
+    volumes:
+      - sonar-data:/opt/sonarqube/data
+      - sonar-extensions:/opt/sonarqube/extensions
+      - sonar-logs:/opt/sonarqube/logs
+volumes:
+  sonar-data:
+  sonar-extensions:
+  sonar-logs:

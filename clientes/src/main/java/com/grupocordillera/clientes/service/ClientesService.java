@@ -2,6 +2,7 @@ package com.grupocordillera.clientes.service;
 
 import com.grupocordillera.clientes.dto.ClienteRequest;
 import com.grupocordillera.clientes.dto.RegistrarCompraRequest;
+import com.grupocordillera.clientes.exception.ClienteNotFoundException;
 import com.grupocordillera.clientes.model.Cliente;
 import com.grupocordillera.clientes.repository.ClienteRepository;
 import lombok.RequiredArgsConstructor;
@@ -78,7 +79,7 @@ public class ClientesService {
 
     public Cliente obtenerPorId(Long id) {
         return clienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con id: " + id));
+                .orElseThrow(() -> new ClienteNotFoundException(id));
     }
 
     public List<Cliente> obtenerPorTipo(Cliente.TipoCliente tipoCliente) {
